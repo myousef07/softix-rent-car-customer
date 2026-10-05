@@ -15,14 +15,17 @@ class Fmt {
   }
 
   /// API timestamps are UTC; show them in Riyadh time.
-  static DateTime? riyadh(String? iso) =>
-      iso == null ? null : DateTime.parse(iso).toUtc().add(AppConfig.riyadhOffset);
+  static DateTime? riyadh(String? iso) => iso == null ? null : DateTime.parse(iso).toUtc().add(AppConfig.riyadhOffset);
 
   static String date(String? iso) => iso == null ? '—' : _date.format(riyadh(iso)!);
 
   static String dateTime(String? iso) => iso == null ? '—' : _dateTime.format(riyadh(iso)!);
 
   static String time(String? iso) => iso == null ? '—' : _time.format(riyadh(iso)!);
+
+  /// A picked wall-clock time, short: «الثلاثاء 6/10 · 10:00» (Arabic day names, western digits).
+  static String dayTime(DateTime wallClock) =>
+      '${DateFormat.EEEE('ar').format(wallClock)} ${DateFormat('d/M', 'en').format(wallClock)} · ${_time.format(wallClock)}';
 
   /// A wall-clock time picked on the phone, sent as Riyadh time with an explicit offset.
   static String toApi(DateTime riyadhWallClock) {
@@ -33,11 +36,11 @@ class Fmt {
   static DateTime nowInRiyadh() => DateTime.now().toUtc().add(AppConfig.riyadhOffset);
 
   static String days(int days) => switch (days) {
-        1 => 'يوم واحد',
-        2 => 'يومان',
-        >= 3 && <= 10 => '$days أيام',
-        _ => '$days يوماً',
-      };
+    1 => 'يوم واحد',
+    2 => 'يومان',
+    >= 3 && <= 10 => '$days أيام',
+    _ => '$days يوماً',
+  };
 
   static const fuelLabels = ['فارغ', '1/8', '2/8', '3/8', '4/8', '5/8', '6/8', '7/8', 'ممتلئ'];
 }

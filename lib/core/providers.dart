@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../models/paged_result.dart';
 import 'api_client.dart';
+import 'config.dart';
 import 'session.dart';
 
 /// Overridden in main() with the real instance.
@@ -15,6 +16,13 @@ final repositoryProvider = Provider<Repository>((ref) => Repository(ref.watch(ap
 final branchesProvider = FutureProvider<List<Branch>>((ref) => ref.watch(repositoryProvider).branches());
 
 final extrasProvider = FutureProvider<List<Extra>>((ref) => ref.watch(repositoryProvider).extras());
+
+/// The renter's next pickup and current rental, for the home screen.
+final upcomingReservationsProvider = FutureProvider.autoDispose<List<Reservation>>(
+  (ref) async => (await ref.watch(repositoryProvider).reservations(scope: 'upcoming')).items,
+);
+
+final openContractsProvider = FutureProvider.autoDispose<List<Contract>>((ref) async => (await ref.watch(repositoryProvider).contracts(scope: 'open')).items);
 
 /// Every API call the app makes, in one place.
 class Repository {
@@ -61,4 +69,10 @@ class Repository {
   Future<List<int>> invoicePdf(int id) => api.bytes('/invoices/$id/pdf');
 
   Future<Profile> updateProfile(Map<String, dynamic> changes) async => Profile.fromJson(_data(await api.patch('/me', data: changes)));
+
+  /// «Call me back / send me a quote», before or without signing in. Returns the reference.
+  Future<String> requestCallback(Map<String, dynamic> lead) async {
+    final response = await api.post('/leads', data: {...lead, 'company_id': AppConfig.companyId, 'source': 'app'});
+    return '${response['reference'] ?? ''}';
+  }
 }

@@ -27,6 +27,10 @@ class Session extends ChangeNotifier {
   Profile? profile;
   bool restoring = true;
 
+  /// Push registration hooks, set in main(): after sign-in, and before the token is revoked.
+  Future<void> Function()? onSignedIn;
+  Future<void> Function()? beforeSignOut;
+
   bool get isSignedIn => profile != null;
 
   String get _device => 'SOftiX (${defaultTargetPlatform.name})';
@@ -37,6 +41,7 @@ class Session extends ChangeNotifier {
       if (token != null) {
         api.token = token;
         await reloadProfile();
+        onSignedIn?.call();
       }
     } catch (_) {
       await _clear();
@@ -51,16 +56,13 @@ class Session extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> requestCode(String mobile) =>
-      api.post('/auth/otp', data: {'company_id': AppConfig.companyId, 'mobile': mobile.trim()});
+  Future<void> requestCode(String mobile) => api.post('/auth/otp', data: {'company_id': AppConfig.companyId, 'mobile': mobile.trim()});
 
   Future<VerifyResult> verify(String mobile, String code) async {
-    final response = await api.post('/auth/verify', data: {
-      'company_id': AppConfig.companyId,
-      'mobile': mobile.trim(),
-      'code': code.trim(),
-      'device_name': _device,
-    });
+    final response = await api.post(
+      '/auth/verify',
+      data: {'company_id': AppConfig.companyId, 'mobile': mobile.trim(), 'code': code.trim(), 'device_name': _device},
+    );
 
     if (response['is_new'] == true) return VerifyResult.mustRegister(response['registration_token'] as String);
 
@@ -75,6 +77,7 @@ class Session extends ChangeNotifier {
 
   Future<void> signOut() async {
     try {
+      await beforeSignOut?.call();
       if (api.hasToken) await api.post('/auth/logout');
     } catch (_) {
       // The token is dropped locally either way.
@@ -96,6 +99,7 @@ class Session extends ChangeNotifier {
     api.token = token;
     profile = Profile.fromJson(Map<String, dynamic>.from(response['customer']));
     notifyListeners();
+    onSignedIn?.call();
   }
 
   Future<void> _clear() async {

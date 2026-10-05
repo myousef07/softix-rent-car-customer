@@ -4,33 +4,78 @@ library;
 
 Map<String, dynamic> _map(Object? value) => Map<String, dynamic>.from(value as Map);
 
-List<T> _list<T>(Object? value, T Function(Map<String, dynamic>) item) =>
-    (value as List? ?? const []).map((e) => item(_map(e))).toList();
+List<T> _list<T>(Object? value, T Function(Map<String, dynamic>) item) => (value as List? ?? const []).map((e) => item(_map(e))).toList();
+
+class Address {
+  Address({this.city, this.district, this.street, this.buildingNumber, this.postalCode});
+
+  final String? city;
+  final String? district;
+  final String? street;
+  final String? buildingNumber;
+  final String? postalCode;
+
+  bool get isEmpty => [city, district, street, buildingNumber, postalCode].every((v) => v == null || v.isEmpty);
+
+  String get line => [street, district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
+
+  factory Address.fromJson(Map<String, dynamic>? json) => Address(
+    city: json?['city'] as String?,
+    district: json?['district'] as String?,
+    street: json?['street'] as String?,
+    buildingNumber: json?['building_number'] as String?,
+    postalCode: json?['postal_code'] as String?,
+  );
+}
 
 class Profile {
-  Profile({required this.id, required this.name, required this.firstName, required this.mobile, this.email, this.idNumber, this.licenseExpiry, required this.status});
+  Profile({
+    required this.id,
+    required this.name,
+    required this.firstName,
+    required this.mobile,
+    this.lastName = '',
+    this.email,
+    this.idNumber,
+    this.licenseExpiry,
+    required this.status,
+    Address? address,
+  }) : address = address ?? Address();
 
   final int id;
   final String name;
   final String firstName;
+  final String lastName;
   final String mobile;
   final String? email;
   final String? idNumber;
   final String? licenseExpiry;
   final String status;
+  final Address address;
 
   bool get isBlacklisted => status == 'blacklisted';
 
+  /// The licence runs out within 30 days (or already has): worth a reminder before booking.
+  bool get licenseExpiringSoon {
+    final expiry = licenseExpiry == null ? null : DateTime.tryParse(licenseExpiry!);
+    return expiry != null && expiry.isBefore(DateTime.now().add(const Duration(days: 30)));
+  }
+
+  /// +9665XXXXXXXX shown the way people write it: 05XXXXXXXX.
+  String get localMobile => mobile.startsWith('+966') ? '0${mobile.substring(4)}' : mobile;
+
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-        id: json['id'] as int,
-        name: json['name'] as String? ?? '',
-        firstName: json['first_name'] as String? ?? '',
-        mobile: json['mobile'] as String? ?? '',
-        email: json['email'] as String?,
-        idNumber: json['id_number'] as String?,
-        licenseExpiry: json['license_expiry_date'] as String?,
-        status: json['status'] as String? ?? 'active',
-      );
+    id: json['id'] as int,
+    name: json['name'] as String? ?? '',
+    firstName: json['first_name'] as String? ?? '',
+    lastName: json['last_name'] as String? ?? '',
+    mobile: json['mobile'] as String? ?? '',
+    email: json['email'] as String?,
+    idNumber: json['id_number'] as String?,
+    licenseExpiry: json['license_expiry_date'] as String?,
+    status: json['status'] as String? ?? 'active',
+    address: Address.fromJson(json['address'] is Map ? _map(json['address']) : null),
+  );
 }
 
 class Branch {
@@ -48,15 +93,15 @@ class Branch {
   String get place => [district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        city: json['city'] as String?,
-        district: json['district'] as String?,
-        address: json['address'] as String?,
-        phone: json['phone'] as String?,
-        latitude: (json['latitude'] as num?)?.toDouble(),
-        longitude: (json['longitude'] as num?)?.toDouble(),
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    city: json['city'] as String?,
+    district: json['district'] as String?,
+    address: json['address'] as String?,
+    phone: json['phone'] as String?,
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+  );
 }
 
 class Category {
@@ -82,12 +127,12 @@ class Extra {
   String get unit => pricingType == 'per_day' ? 'لليوم' : 'للحجز';
 
   factory Extra.fromJson(Map<String, dynamic> json) => Extra(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        pricingType: json['pricing_type'] as String,
-        price: json['price'].toString(),
-        maxQuantity: (json['max_quantity'] as int?) ?? 1,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    pricingType: json['pricing_type'] as String,
+    price: json['price'].toString(),
+    maxQuantity: (json['max_quantity'] as int?) ?? 1,
+  );
 }
 
 class QuoteLine {
@@ -99,15 +144,24 @@ class QuoteLine {
   final String discount;
 
   factory QuoteLine.fromJson(Map<String, dynamic> json) => QuoteLine(
-        type: json['type'] as String,
-        description: json['description'] as String,
-        amount: json['amount'].toString(),
-        discount: json['discount'].toString(),
-      );
+    type: json['type'] as String,
+    description: json['description'] as String,
+    amount: json['amount'].toString(),
+    discount: json['discount'].toString(),
+  );
 }
 
 class Quote {
-  Quote({required this.days, required this.subtotal, required this.discount, required this.vat, required this.total, required this.deposit, this.includedKm, this.lines = const []});
+  Quote({
+    required this.days,
+    required this.subtotal,
+    required this.discount,
+    required this.vat,
+    required this.total,
+    required this.deposit,
+    this.includedKm,
+    this.lines = const [],
+  });
 
   final int days;
   final String subtotal;
@@ -127,15 +181,15 @@ class Quote {
   }
 
   factory Quote.fromJson(Map<String, dynamic> json) => Quote(
-        days: json['days'] as int,
-        subtotal: json['subtotal'].toString(),
-        discount: json['discount'].toString(),
-        vat: json['vat'].toString(),
-        total: json['total'].toString(),
-        deposit: json['deposit'].toString(),
-        includedKm: json['included_km'] as int?,
-        lines: _list(json['lines'], QuoteLine.fromJson),
-      );
+    days: json['days'] as int,
+    subtotal: json['subtotal'].toString(),
+    discount: json['discount'].toString(),
+    vat: json['vat'].toString(),
+    total: json['total'].toString(),
+    deposit: json['deposit'].toString(),
+    includedKm: json['included_km'] as int?,
+    lines: _list(json['lines'], QuoteLine.fromJson),
+  );
 }
 
 /// One category offered at a branch for the searched period.
@@ -151,12 +205,12 @@ class Offer {
   String get modelsLine => models.isEmpty ? '' : '${models.join(' أو ')} أو مماثل';
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
-        category: Category.fromJson(_map(json['category'])),
-        models: List<String>.from(json['models'] as List? ?? const []),
-        available: json['available'] as bool? ?? false,
-        quote: Quote.fromJson(_map(json['quote'])),
-        seats: json['seats'] as int?,
-      );
+    category: Category.fromJson(_map(json['category'])),
+    models: List<String>.from(json['models'] as List? ?? const []),
+    available: json['available'] as bool? ?? false,
+    quote: Quote.fromJson(_map(json['quote'])),
+    seats: json['seats'] as int?,
+  );
 }
 
 class ReservationExtra {
@@ -211,24 +265,24 @@ class Reservation {
   bool get isActive => status == 'pending' || status == 'confirmed';
 
   factory Reservation.fromJson(Map<String, dynamic> json) => Reservation(
-        id: json['id'] as int,
-        number: json['number'] as String,
-        status: json['status'] as String,
-        statusLabel: json['status_label'] as String,
-        pickupAt: json['pickup_at'] as String,
-        returnAt: json['return_at'] as String,
-        days: json['days'] as int? ?? 0,
-        subtotal: json['subtotal'].toString(),
-        discount: json['discount'].toString(),
-        vat: json['vat'].toString(),
-        total: json['total'].toString(),
-        deposit: json['deposit_amount'].toString(),
-        category: json['category'] is Map ? Category.fromJson(_map(json['category'])) : null,
-        branch: json['branch'] is Map ? Branch.fromJson(_map(json['branch'])) : null,
-        returnBranch: json['return_branch'] is Map ? Branch.fromJson(_map(json['return_branch'])) : null,
-        extras: _list(json['extras'], ReservationExtra.fromJson),
-        contractId: json['contract_id'] as int?,
-      );
+    id: json['id'] as int,
+    number: json['number'] as String,
+    status: json['status'] as String,
+    statusLabel: json['status_label'] as String,
+    pickupAt: json['pickup_at'] as String,
+    returnAt: json['return_at'] as String,
+    days: json['days'] as int? ?? 0,
+    subtotal: json['subtotal'].toString(),
+    discount: json['discount'].toString(),
+    vat: json['vat'].toString(),
+    total: json['total'].toString(),
+    deposit: json['deposit_amount'].toString(),
+    category: json['category'] is Map ? Category.fromJson(_map(json['category'])) : null,
+    branch: json['branch'] is Map ? Branch.fromJson(_map(json['branch'])) : null,
+    returnBranch: json['return_branch'] is Map ? Branch.fromJson(_map(json['return_branch'])) : null,
+    extras: _list(json['extras'], ReservationExtra.fromJson),
+    contractId: json['contract_id'] as int?,
+  );
 }
 
 class ContractCharge {
@@ -326,7 +380,17 @@ class Contract {
 }
 
 class Invoice {
-  Invoice({required this.id, required this.number, required this.status, required this.statusLabel, required this.issuedAt, required this.total, required this.due, this.contractNumber, required this.isCreditNote});
+  Invoice({
+    required this.id,
+    required this.number,
+    required this.status,
+    required this.statusLabel,
+    required this.issuedAt,
+    required this.total,
+    required this.due,
+    this.contractNumber,
+    required this.isCreditNote,
+  });
 
   final int id;
   final String number;
@@ -339,16 +403,16 @@ class Invoice {
   final bool isCreditNote;
 
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
-        id: json['id'] as int,
-        number: json['number'] as String,
-        status: json['status'] as String,
-        statusLabel: json['status_label'] as String,
-        issuedAt: json['issued_at'] as String?,
-        total: json['total'].toString(),
-        due: json['due'].toString(),
-        contractNumber: json['contract_number'] as String?,
-        isCreditNote: json['document_type'] == 'credit_note',
-      );
+    id: json['id'] as int,
+    number: json['number'] as String,
+    status: json['status'] as String,
+    statusLabel: json['status_label'] as String,
+    issuedAt: json['issued_at'] as String?,
+    total: json['total'].toString(),
+    due: json['due'].toString(),
+    contractNumber: json['contract_number'] as String?,
+    isCreditNote: json['document_type'] == 'credit_note',
+  );
 }
 
 class PaymentPage {

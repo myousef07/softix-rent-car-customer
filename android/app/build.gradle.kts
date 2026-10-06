@@ -9,7 +9,7 @@ plugins {
 // One build per rental company: its own store listing (application id) and name on the phone.
 //   flutter build appbundle --android-project-arg=appId=sa.example.rent \
 //     --android-project-arg=appName="المثال لتأجير السيارات" --dart-define=...
-val appId = (project.findProperty("appId") as String?) ?: "sa.softix.softix_customer"
+val appId = (project.findProperty("appId") as String?) ?: "com.softix.rentalCustomer"
 val appName = (project.findProperty("appName") as String?) ?: "SOftiX تأجير"
 
 // Release signing from android/key.properties (kept out of git); debug keys otherwise.

@@ -40,13 +40,12 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   intl: ^0.20.3
   url_launcher: ^6.3.2
-  path_provider: ^2.1.6
-  open_filex: ^4.7.0
   flutter_localizations:
     sdk: flutter
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
   flutter_local_notifications: ^22.3.1
+  printing: ^5.15.1
 
 dev_dependencies:
   flutter_test:

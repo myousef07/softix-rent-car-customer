@@ -63,7 +63,7 @@ class _ContractScreenState extends ConsumerState<ContractScreen> {
 
   Future<void> _pdf(Contract c) async {
     try {
-      await openPdf(() => ref.read(repositoryProvider).contractPdf(c.id), c.number);
+      await openPdf(context, () => ref.read(repositoryProvider).contractPdf(c.id), c.number);
     } catch (error) {
       if (mounted) showError(context, error);
     }

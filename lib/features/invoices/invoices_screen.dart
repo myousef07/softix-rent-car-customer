@@ -54,7 +54,7 @@ class InvoicesScreen extends ConsumerWidget {
           ),
           onTap: () async {
             try {
-              await openPdf(() => ref.read(repositoryProvider).invoicePdf(invoice.id), invoice.number);
+              await openPdf(context, () => ref.read(repositoryProvider).invoicePdf(invoice.id), invoice.number);
             } catch (error) {
               if (context.mounted) showError(context, error);
             }

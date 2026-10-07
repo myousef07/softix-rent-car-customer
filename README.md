@@ -50,6 +50,12 @@ flutter build appbundle \
 
 كل شركة تأجير تطبيقها يُضاف في المشروع نفسه بمعرّفها؛ حساب الخدمة واحد للجميع. بدون هذه القيم يعمل التطبيق طبيعياً، لكن بلا إشعارات. الخادم يرسل الإشعار بنفس نص رسالة SMS، وفقط للرسائل المفعّلة في قوالب الشركة، ولا يرسل الحملات التسويقية أبداً.
 
+## البناء التلقائي من لوحة المنصة
+
+لا حاجة لـ Flutter على جهازك: من لوحة SOftiX ← «الشركات» ← الشركة ← «تطبيق العملاء» ← **بناء نسخة**. تُشغَّل الخطوات في GitHub Actions (`.github/workflows/build-company-app.yml`) باسم الشركة وشعارها ومعرّفها وقيم Firebase، ويُرفق بالتشغيل ملف **APK** للتجربة على الجوال وملف **AAB** للرفع على Google Play. يمكن تشغيلها يدوياً أيضاً من تبويب Actions ← Build company app ← Run workflow.
+
+مرة واحدة: أضف في إعدادات المستودع (Settings ← Secrets and variables ← Actions) مفتاح التوقيع: `ANDROID_KEYSTORE_BASE64` (ناتج `base64 -w0 upload.jks`) و`ANDROID_KEYSTORE_PASSWORD` و`ANDROID_KEY_ALIAS` و`ANDROID_KEY_PASSWORD`. بدونها تُوقّع النسخة بمفتاح التطوير، وتصلح للتجربة فقط. نسخة iOS ما زالت تُبنى على جهاز Mac.
+
 ## التوقيع والنشر
 
 - Android: أنشئ مفتاحاً (`keytool -genkey -v -keystore upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`) وضع `android/key.properties`:

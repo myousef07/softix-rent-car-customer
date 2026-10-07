@@ -56,6 +56,12 @@ void main() {
       ),
       'GET /contracts': (_, query) => (200, page(query['scope'] == 'closed' ? [] : [contract])),
       'GET /contracts/19': (_, _) => (200, {'data': contract}),
+      'GET /contracts/19/self-return': (_, _) => (
+        200,
+        {
+          'data': {'available': true, 'reason': null, 'pending': null, 'last_rejected': null, 'min_photos': 4},
+        },
+      ),
       'GET /reservations': (_, query) => (200, page(query['scope'] == 'upcoming' && !cancelled ? [reservation()] : [])),
       'GET /search': (_, _) => (
         200,
@@ -145,6 +151,30 @@ void main() {
     expect(find.text('RC-RUH-000019'), findsOneWidget);
     expect(find.textContaining('214.00'), findsWidgets);
     expect(find.byKey(const Key('pay')), findsOneWidget);
+  });
+
+  testWidgets('a renter on a rental can return the car from the app, which asks for the photos first', (tester) async {
+    await start(tester);
+    await signIn(tester);
+
+    await tester.tap(find.text('سيارتك الحالية'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('سلّم السيارة الآن'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('سلّم السيارة الآن'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('تسليم السيارة'), findsOneWidget);
+    expect(find.textContaining('التالية: الأمام'), findsOneWidget);
+    expect(find.text('التوقيع'), findsNothing, reason: 'the signature is for pickup only');
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'قراءة العداد'), '25600');
+    await tester.ensureVisible(find.text('إرسال طلب التسليم'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('إرسال طلب التسليم'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('صوّر السيارة من الجهات الأربع'), findsOneWidget);
+    expect(api.called('POST /contracts/19/self-return'), isFalse);
   });
 
   testWidgets('a renter books a car with an extra and a promo code, then cancels it', (tester) async {

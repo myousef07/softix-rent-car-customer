@@ -8,6 +8,7 @@ import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
+import '../self_service/self_service_screen.dart';
 
 class ReservationScreen extends ConsumerStatefulWidget {
   const ReservationScreen({super.key, required this.id});
@@ -59,6 +60,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (r.status == 'confirmed') SelfServiceCard(key: ValueKey('pickup-${r.id}'), pickup: true, id: r.id),
               SectionCard(
                 title: r.category?.name ?? 'الحجز',
                 trailing: StatusChip(r.statusLabel, color: StatusChip.forReservation(r.status)),

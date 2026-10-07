@@ -66,6 +66,16 @@ class Repository {
 
   Future<List<int>> contractPdf(int id) => api.bytes('/contracts/$id/pdf');
 
+  Future<SelfServiceStatus> selfPickupStatus(int reservationId) async =>
+      SelfServiceStatus.fromJson(_data(await api.get('/reservations/$reservationId/self-pickup')));
+
+  Future<SelfServiceStatus> selfReturnStatus(int contractId) async =>
+      SelfServiceStatus.fromJson(_data(await api.get('/contracts/$contractId/self-return')));
+
+  /// Photos, readings and (at pickup) the signature, as multipart.
+  Future<void> sendSelfService({required bool pickup, required int id, required Object form}) =>
+      api.post(pickup ? '/reservations/$id/self-pickup' : '/contracts/$id/self-return', data: form);
+
   Future<List<int>> invoicePdf(int id) => api.bytes('/invoices/$id/pdf');
 
   Future<Profile> updateProfile(Map<String, dynamic> changes) async => Profile.fromJson(_data(await api.patch('/me', data: changes)));

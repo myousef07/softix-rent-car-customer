@@ -7,6 +7,7 @@ import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
+import '../self_service/self_service_screen.dart';
 
 /// One rental: the car, the dates, what was charged, what is still due, and the way to pay it.
 class ContractScreen extends ConsumerStatefulWidget {
@@ -169,6 +170,7 @@ class _ContractScreenState extends ConsumerState<ContractScreen> {
                 const SizedBox(height: 8),
               ],
               BusyButton(outlined: true, icon: Icons.picture_as_pdf_outlined, label: 'نسخة العقد (PDF)', onPressed: () => _pdf(c)),
+              if (c.isOpen) ...[const SizedBox(height: 12), SelfServiceCard(key: ValueKey('return-${c.id}'), pickup: false, id: c.id)],
               if (c.branch?.phone != null) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(

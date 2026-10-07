@@ -19,6 +19,7 @@ import 'features/home/home_shell.dart';
 import 'features/home/splash_screen.dart';
 import 'features/invoices/invoices_screen.dart';
 import 'features/reservations/reservation_screen.dart';
+import 'features/self_service/self_service_screen.dart';
 
 /// Screens anyone may open before signing in.
 const _public = {'/login', '/register', '/callback'};
@@ -76,6 +77,14 @@ class _CustomerAppState extends State<CustomerApp> {
           GoRoute(
             path: 'contracts/:id',
             builder: (_, state) => ContractScreen(id: int.parse(state.pathParameters['id']!)),
+          ),
+          GoRoute(
+            path: 'self-service/:type/:id',
+            builder: (_, state) => SelfServiceScreen(
+              pickup: state.pathParameters['type'] == 'pickup',
+              id: int.parse(state.pathParameters['id']!),
+              minPhotos: int.tryParse(state.uri.queryParameters['photos'] ?? '') ?? 4,
+            ),
           ),
           GoRoute(path: 'invoices', builder: (_, _) => const InvoicesScreen()),
           GoRoute(path: 'profile', builder: (_, _) => const EditProfileScreen()),

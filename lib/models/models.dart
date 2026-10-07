@@ -430,3 +430,25 @@ class PaymentPage {
 
   factory PaymentPage.fromJson(Map<String, dynamic> json) => PaymentPage(url: json['url'] as String, amount: json['amount'].toString());
 }
+
+/// Whether the renter can pick up (or return) the car from the app now, and how a request
+/// already sent stands.
+class SelfServiceStatus {
+  SelfServiceStatus({required this.available, this.reason, this.pendingLabel, this.rejectedReason, this.minPhotos = 4});
+
+  final bool available;
+  final String? reason;
+  final String? pendingLabel;
+  final String? rejectedReason;
+  final int minPhotos;
+
+  bool get isPending => pendingLabel != null;
+
+  factory SelfServiceStatus.fromJson(Map<String, dynamic> json) => SelfServiceStatus(
+    available: json['available'] as bool? ?? false,
+    reason: json['reason'] as String?,
+    pendingLabel: (json['pending'] as Map?)?['status_label'] as String?,
+    rejectedReason: (json['last_rejected'] as Map?)?['rejection_reason'] as String?,
+    minPhotos: json['min_photos'] as int? ?? 4,
+  );
+}

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_exception.dart';
 import '../../core/providers.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// The details a renter may change themselves: e-mail and national address.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -47,7 +48,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       });
       await ref.read(sessionProvider).reloadProfile();
       if (!mounted) return;
-      showSuccess(context, 'تم حفظ بياناتك.');
+      showSuccess(context, tr('تم حفظ بياناتك.'));
       context.pop();
     } catch (error) {
       if (!mounted) return;
@@ -69,26 +70,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('البريد والعنوان')),
+    appBar: AppBar(title: Text(tr('البريد والعنوان'))),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _field(_email, 'البريد الإلكتروني', 'email', keyboard: TextInputType.emailAddress, ltr: true),
+        _field(_email, tr('البريد الإلكتروني'), 'email', keyboard: TextInputType.emailAddress, ltr: true),
         const SizedBox(height: 8),
-        const Text('العنوان الوطني', style: TextStyle(fontWeight: FontWeight.w700)),
+        Text(tr('العنوان الوطني'), style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
-        _field(_city, 'المدينة', 'city'),
-        _field(_district, 'الحي', 'district'),
-        _field(_street, 'الشارع', 'street'),
+        _field(_city, tr('المدينة'), 'city'),
+        _field(_district, tr('الحي'), 'district'),
+        _field(_street, tr('الشارع'), 'street'),
         Row(
           children: [
-            Expanded(child: _field(_building, 'رقم المبنى', 'building_number', keyboard: TextInputType.number, ltr: true)),
+            Expanded(child: _field(_building, tr('رقم المبنى'), 'building_number', keyboard: TextInputType.number, ltr: true)),
             const SizedBox(width: 12),
-            Expanded(child: _field(_postal, 'الرمز البريدي', 'postal_code', keyboard: TextInputType.number, ltr: true)),
+            Expanded(child: _field(_postal, tr('الرمز البريدي'), 'postal_code', keyboard: TextInputType.number, ltr: true)),
           ],
         ),
         const SizedBox(height: 12),
-        BusyButton(key: const Key('save-profile'), label: 'حفظ', onPressed: _save),
+        BusyButton(key: const Key('save-profile'), label: tr('حفظ'), onPressed: _save),
       ],
     ),
   );

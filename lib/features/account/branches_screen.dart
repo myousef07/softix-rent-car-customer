@@ -5,6 +5,7 @@ import '../../core/files.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 class BranchesScreen extends ConsumerWidget {
   const BranchesScreen({super.key});
@@ -14,12 +15,12 @@ class BranchesScreen extends ConsumerWidget {
     final branches = ref.watch(branchesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الفروع')),
+      appBar: AppBar(title: Text(tr('الفروع'))),
       body: branches.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => ErrorView(error, onRetry: () => ref.invalidate(branchesProvider)),
         data: (list) => list.isEmpty
-            ? const EmptyState('لا توجد فروع.')
+            ? EmptyState(tr('لا توجد فروع.'))
             : ListView.separated(
                 padding: const EdgeInsets.all(12),
                 itemCount: list.length,
@@ -50,7 +51,7 @@ class BranchesScreen extends ConsumerWidget {
                                 child: OutlinedButton.icon(
                                   onPressed: () => openMap(b.latitude!, b.longitude!),
                                   icon: const Icon(Icons.map_outlined, size: 18),
-                                  label: const Text('الموقع'),
+                                  label: Text(tr('الموقع')),
                                 ),
                               ),
                           ],

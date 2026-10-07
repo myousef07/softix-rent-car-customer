@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/api_exception.dart';
 import '../core/theme.dart';
+import '../core/i18n.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip(this.label, {super.key, this.color = AppColors.muted});
@@ -137,7 +138,7 @@ class ErrorView extends StatelessWidget {
           const Icon(Icons.error_outline, size: 40, color: AppColors.danger),
           const SizedBox(height: 12),
           Text(ApiException.from(error).message, textAlign: TextAlign.center),
-          if (onRetry != null) ...[const SizedBox(height: 12), TextButton(onPressed: onRetry, child: const Text('إعادة المحاولة'))],
+          if (onRetry != null) ...[const SizedBox(height: 12), TextButton(onPressed: onRetry, child: Text(tr('إعادة المحاولة')))],
         ],
       ),
     ),

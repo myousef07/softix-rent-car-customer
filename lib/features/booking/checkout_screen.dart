@@ -11,6 +11,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import 'booking_draft.dart';
+import '../../core/i18n.dart';
 
 /// The last step: extras, return branch and promo code, the price the renter will pay, and
 /// the booking itself.
@@ -115,15 +116,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-        title: const Text('تم تأكيد حجزك'),
+        title: Text(tr('تم تأكيد حجزك')),
         content: Text(
-          'رقم الحجز ${reservation.number}\n'
-          'الاستلام ${Fmt.dateTime(reservation.pickupAt)} من ${reservation.branch?.name ?? _search.branch.name}.\n'
-          'أحضر الهوية والرخصة الأصلية عند الاستلام.',
+          tr('رقم الحجز {0}\n', [reservation.number]) +
+              tr('الاستلام {0} من {1}.\n', [Fmt.dateTime(reservation.pickupAt), reservation.branch?.name ?? _search.branch.name]) +
+              tr('أحضر الهوية والرخصة الأصلية عند الاستلام.'),
           textAlign: TextAlign.center,
           style: const TextStyle(height: 1.6),
         ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('عرض الحجز'))],
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(tr('عرض الحجز')))],
       ),
     );
     if (!mounted) return;
@@ -138,7 +139,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final profile = ref.watch(sessionProvider).profile;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تأكيد الحجز')),
+      appBar: AppBar(title: Text(tr('تأكيد الحجز'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -152,17 +153,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: InfoItem('الاستلام', Fmt.dateTime(_search.pickupApi))),
-                    Expanded(child: InfoItem('الإعادة', Fmt.dateTime(_search.returnApi))),
+                    Expanded(child: InfoItem(tr('الاستلام'), Fmt.dateTime(_search.pickupApi))),
+                    Expanded(child: InfoItem(tr('الإعادة'), Fmt.dateTime(_search.returnApi))),
                   ],
                 ),
                 const SizedBox(height: 12),
-                InfoItem('فرع الاستلام', _search.branch.name),
+                InfoItem(tr('فرع الاستلام'), _search.branch.name),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
                   initialValue: _returnBranchId ?? _search.branch.id,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'فرع الإعادة'),
+                  decoration: InputDecoration(labelText: tr('فرع الإعادة')),
                   items: [
                     for (final b in branches)
                       DropdownMenuItem(
@@ -185,7 +186,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             data: (list) => list.isEmpty
                 ? const SizedBox.shrink()
                 : SectionCard(
-                    title: 'الإضافات',
+                    title: tr('الإضافات'),
                     child: Column(
                       children: [
                         for (final extra in list) _ExtraRow(extra: extra, quantity: _quantities[extra.id] ?? 0, onChanged: (q) => _setQuantity(extra, q)),
@@ -195,7 +196,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
           const SizedBox(height: 12),
           SectionCard(
-            title: 'رمز الخصم',
+            title: tr('رمز الخصم'),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -206,9 +207,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     textCapitalization: TextCapitalization.characters,
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
-                      hintText: 'إن وُجد',
+                      hintText: tr('إن وُجد'),
                       errorText: _promoError,
-                      helperText: _appliedPromo != null && _quote.hasDiscount ? 'تم تطبيق الخصم ✓' : null,
+                      helperText: _appliedPromo != null && _quote.hasDiscount ? tr('تم تطبيق الخصم ✓') : null,
                     ),
                     onSubmitted: (_) => _applyPromo(),
                   ),
@@ -216,36 +217,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 90,
-                  child: OutlinedButton(onPressed: _applyPromo, child: const Text('تطبيق')),
+                  child: OutlinedButton(onPressed: _applyPromo, child: Text(tr('تطبيق'))),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           SectionCard(
-            title: 'ملاحظات للفرع',
+            title: tr('ملاحظات للفرع'),
             child: TextField(
               controller: _notes,
               maxLines: 2,
               maxLength: 500,
-              decoration: const InputDecoration(hintText: 'مثلاً: موعد وصول الرحلة، كرسي أطفال…'),
+              decoration: InputDecoration(hintText: tr('مثلاً: موعد وصول الرحلة، كرسي أطفال…')),
             ),
           ),
           const SizedBox(height: 12),
           SectionCard(
-            title: 'السعر',
+            title: tr('السعر'),
             trailing: _quoting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : null,
             child: Column(
               children: [
                 for (final line in _quote.lines) AmountRow(line.description, Fmt.money(line.amount)),
-                if (_quote.hasDiscount) AmountRow('الخصم', '- ${Fmt.money(_quote.discount)}', color: AppColors.success),
-                AmountRow('ضريبة القيمة المضافة 15%', Fmt.money(_quote.vat)),
+                if (_quote.hasDiscount) AmountRow(tr('الخصم'), '- ${Fmt.money(_quote.discount)}', color: AppColors.success),
+                AmountRow(tr('ضريبة القيمة المضافة 15%'), Fmt.money(_quote.vat)),
                 const Divider(height: 16),
-                AmountRow('الإجمالي', Fmt.money(_quote.total), bold: true),
+                AmountRow(tr('الإجمالي'), Fmt.money(_quote.total), bold: true),
                 const SizedBox(height: 8),
                 Text(
-                  'يُدفع عند الاستلام في الفرع، مع تأمين مسترد ${Fmt.money(_quote.deposit)}.'
-                  '${_quote.includedKm != null ? ' تشمل الأجرة ${_quote.includedKm} كم، وتُحسب الزيادة حسب سعر الفئة.' : ''}',
+                  tr('يُدفع عند الاستلام في الفرع، مع تأمين مسترد {0}.', [Fmt.money(_quote.deposit)]) +
+                      (_quote.includedKm != null ? tr(' تشمل الأجرة {0} كم، وتُحسب الزيادة حسب سعر الفئة.', [_quote.includedKm]) : ''),
                   style: const TextStyle(color: AppColors.muted, fontSize: 12, height: 1.5),
                 ),
               ],
@@ -253,13 +254,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
           if (profile?.licenseExpiringSoon ?? false) ...[
             const SizedBox(height: 12),
-            NoticeBanner('تنبيه: رخصتك تنتهي في ${Fmt.date(profile!.licenseExpiry)}. لا تُسلَّم السيارة برخصة منتهية.'),
+            NoticeBanner(tr('تنبيه: رخصتك تنتهي في {0}. لا تُسلَّم السيارة برخصة منتهية.', [Fmt.date(profile!.licenseExpiry)])),
           ],
           const SizedBox(height: 20),
-          BusyButton(key: const Key('confirm-booking'), label: 'تأكيد الحجز · ${Fmt.money(_quote.total)}', onPressed: _quoting ? null : _book),
+          BusyButton(key: const Key('confirm-booking'), label: tr('تأكيد الحجز · {0}', [Fmt.money(_quote.total)]), onPressed: _quoting ? null : _book),
           const SizedBox(height: 8),
-          const Text(
-            'يمكنك إلغاء الحجز مجاناً من التطبيق حتى ساعتين قبل موعد الاستلام.',
+          Text(
+            tr('يمكنك إلغاء الحجز مجاناً من التطبيق حتى ساعتين قبل موعد الاستلام.'),
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.muted, fontSize: 12),
           ),

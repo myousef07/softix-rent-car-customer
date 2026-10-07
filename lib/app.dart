@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/config.dart';
+import 'core/i18n.dart';
 import 'core/push.dart';
 import 'core/session.dart';
 import 'core/theme.dart';
@@ -105,13 +106,19 @@ class _CustomerAppState extends State<CustomerApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-    title: AppConfig.companyName,
-    debugShowCheckedModeBanner: false,
-    theme: buildTheme(),
-    locale: const Locale('ar'),
-    supportedLocales: const [Locale('ar')],
-    localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    routerConfig: _router,
+  Widget build(BuildContext context) => ValueListenableBuilder<String>(
+    valueListenable: AppLanguage.current,
+    // A new key rebuilds every screen in the chosen language (and direction); the router keeps
+    // the current page.
+    builder: (context, language, _) => MaterialApp.router(
+      key: ValueKey(language),
+      title: AppConfig.companyName,
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(),
+      locale: Locale(language),
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      routerConfig: _router,
+    ),
   );
 }

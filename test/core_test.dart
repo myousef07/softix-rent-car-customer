@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:softix_customer/core/api_exception.dart';
 import 'package:softix_customer/core/format.dart';
+import 'package:softix_customer/core/i18n.dart';
 import 'package:softix_customer/core/push.dart';
 import 'package:softix_customer/models/models.dart';
 import 'package:softix_customer/widgets/common.dart';
@@ -117,5 +118,18 @@ void main() {
     expect(routeForPush({'type': 'rental_contract', 'id': '19'}), '/contracts/19');
     expect(routeForPush({'type': 'invoice', 'id': '4'}), '/invoices');
     expect(routeForPush({'event': 'campaign'}), isNull);
+  });
+
+  test('English swaps phrases and keeps the values and anything unknown', () {
+    addTearDown(() => AppLanguage.current.value = 'ar');
+    expect(tr('عقد {0}', ['RC-1']), 'عقد RC-1');
+    expect(Fmt.money(1035), '1,035.00 ر.س');
+
+    AppLanguage.current.value = 'en';
+    expect(tr('عقد {0}', ['RC-1']), 'Contract RC-1');
+    expect(tr('صوّر السيارة من الجهات الأربع على الأقل ({0} من {1}).', [2, 4]), 'Photograph the car from all four sides at least (2 of 4).');
+    expect(Fmt.money(1035), '1,035.00 SAR');
+    expect(Fmt.days(3), '3 days');
+    expect(tr('نص لم يُترجم'), 'نص لم يُترجم');
   });
 }

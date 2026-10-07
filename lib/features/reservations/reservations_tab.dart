@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/paged_list.dart';
+import '../../core/i18n.dart';
 
 class ReservationsTab extends ConsumerStatefulWidget {
   const ReservationsTab({super.key});
@@ -26,15 +27,15 @@ class _ReservationsTabState extends ConsumerState<ReservationsTab> {
     ref.listen(upcomingReservationsProvider, (_, _) => setState(() => _reload++));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('حجوزاتي')),
+      appBar: AppBar(title: Text(tr('حجوزاتي'))),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'upcoming', label: Text('القادمة')),
-                ButtonSegment(value: 'past', label: Text('السابقة')),
+              segments: [
+                ButtonSegment(value: 'upcoming', label: Text(tr('القادمة'))),
+                ButtonSegment(value: 'past', label: Text(tr('السابقة'))),
               ],
               selected: {_scope},
               onSelectionChanged: (s) => setState(() => _scope = s.first),
@@ -44,7 +45,7 @@ class _ReservationsTabState extends ConsumerState<ReservationsTab> {
             child: PagedList<Reservation>(
               filters: (_scope, _reload),
               fetch: (cursor) => ref.read(repositoryProvider).reservations(scope: _scope, cursor: cursor),
-              empty: _scope == 'upcoming' ? 'لا توجد حجوزات قادمة. احجز سيارتك من الصفحة الرئيسية.' : 'لا توجد حجوزات سابقة.',
+              empty: _scope == 'upcoming' ? tr('لا توجد حجوزات قادمة. احجز سيارتك من الصفحة الرئيسية.') : tr('لا توجد حجوزات سابقة.'),
               itemBuilder: (context, r) => ReservationTile(reservation: r),
             ),
           ),
@@ -73,7 +74,7 @@ class ReservationTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    reservation.category?.name ?? 'حجز',
+                    reservation.category?.name ?? tr('حجز'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),

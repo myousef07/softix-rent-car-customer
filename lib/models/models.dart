@@ -2,6 +2,8 @@
 /// them, so nothing is lost to floating point before it is shown.
 library;
 
+import '../core/i18n.dart';
+
 Map<String, dynamic> _map(Object? value) => Map<String, dynamic>.from(value as Map);
 
 List<T> _list<T>(Object? value, T Function(Map<String, dynamic>) item) => (value as List? ?? const []).map((e) => item(_map(e))).toList();
@@ -17,7 +19,7 @@ class Address {
 
   bool get isEmpty => [city, district, street, buildingNumber, postalCode].every((v) => v == null || v.isEmpty);
 
-  String get line => [street, district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
+  String get line => [street, district, city].whereType<String>().where((s) => s.isNotEmpty).join(tr('، '));
 
   factory Address.fromJson(Map<String, dynamic>? json) => Address(
     city: json?['city'] as String?,
@@ -90,7 +92,7 @@ class Branch {
   final double? latitude;
   final double? longitude;
 
-  String get place => [district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
+  String get place => [district, city].whereType<String>().where((s) => s.isNotEmpty).join(tr('، '));
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
     id: json['id'] as int,
@@ -131,7 +133,7 @@ class Extra {
   final String price;
   final int maxQuantity;
 
-  String get unit => pricingType == 'per_day' ? 'لليوم' : 'للحجز';
+  String get unit => pricingType == 'per_day' ? tr('لليوم') : tr('للحجز');
 
   factory Extra.fromJson(Map<String, dynamic> json) => Extra(
     id: json['id'] as int,
@@ -209,7 +211,7 @@ class Offer {
   final Quote quote;
   final int? seats;
 
-  String get modelsLine => models.isEmpty ? '' : '${models.join(' أو ')} أو مماثل';
+  String get modelsLine => models.isEmpty ? '' : tr('{0} أو مماثل', [models.join(tr(' أو '))]);
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
     category: Category.fromJson(_map(json['category'])),

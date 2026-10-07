@@ -7,6 +7,7 @@ import '../../core/api_exception.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// What a verified new number carries into registration.
 class RegistrationClaim {
@@ -28,34 +29,34 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  static const idTypes = {'national_id': 'هوية وطنية', 'iqama': 'إقامة', 'gcc_id': 'هوية خليجية', 'passport': 'جواز سفر', 'visitor': 'هوية زائر'};
+  static Map<String, String> get idTypes => {'national_id': tr('هوية وطنية'), 'iqama': tr('إقامة'), 'gcc_id': tr('هوية خليجية'), 'passport': tr('جواز سفر'), 'visitor': tr('هوية زائر')};
 
-  static const nationalities = {
-    'SA': 'السعودية',
-    'EG': 'مصر',
-    'YE': 'اليمن',
-    'SY': 'سوريا',
-    'JO': 'الأردن',
-    'SD': 'السودان',
-    'LB': 'لبنان',
-    'PS': 'فلسطين',
-    'IQ': 'العراق',
-    'KW': 'الكويت',
-    'AE': 'الإمارات',
-    'BH': 'البحرين',
-    'QA': 'قطر',
-    'OM': 'عُمان',
-    'IN': 'الهند',
-    'PK': 'باكستان',
-    'BD': 'بنغلاديش',
-    'PH': 'الفلبين',
-    'ID': 'إندونيسيا',
-    'TR': 'تركيا',
-    'MA': 'المغرب',
-    'TN': 'تونس',
-    'DZ': 'الجزائر',
-    'US': 'الولايات المتحدة',
-    'GB': 'المملكة المتحدة',
+  static Map<String, String> get nationalities => {
+    'SA': tr('السعودية'),
+    'EG': tr('مصر'),
+    'YE': tr('اليمن'),
+    'SY': tr('سوريا'),
+    'JO': tr('الأردن'),
+    'SD': tr('السودان'),
+    'LB': tr('لبنان'),
+    'PS': tr('فلسطين'),
+    'IQ': tr('العراق'),
+    'KW': tr('الكويت'),
+    'AE': tr('الإمارات'),
+    'BH': tr('البحرين'),
+    'QA': tr('قطر'),
+    'OM': tr('عُمان'),
+    'IN': tr('الهند'),
+    'PK': tr('باكستان'),
+    'BD': tr('بنغلاديش'),
+    'PH': tr('الفلبين'),
+    'ID': tr('إندونيسيا'),
+    'TR': tr('تركيا'),
+    'MA': tr('المغرب'),
+    'TN': tr('تونس'),
+    'DZ': tr('الجزائر'),
+    'US': tr('الولايات المتحدة'),
+    'GB': tr('المملكة المتحدة'),
   };
 
   final _form = GlobalKey<FormState>();
@@ -85,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       initialDate: _birth ?? DateTime(now.year - 25),
       firstDate: DateTime(now.year - 90),
       lastDate: DateTime(now.year - 18, now.month, now.day),
-      helpText: 'تاريخ الميلاد',
+      helpText: tr('تاريخ الميلاد'),
     );
     if (picked != null) setState(() => _birth = picked);
   }
@@ -97,7 +98,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       initialDate: _licenseExpiry ?? now.add(const Duration(days: 365)),
       firstDate: now.add(const Duration(days: 1)),
       lastDate: DateTime(now.year + 15),
-      helpText: 'تاريخ انتهاء الرخصة',
+      helpText: tr('تاريخ انتهاء الرخصة'),
     );
     if (picked != null) setState(() => _licenseExpiry = picked);
   }
@@ -140,7 +141,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   String? _server(String field) => fieldError(_error, field);
 
-  String? _required(String? value) => value == null || value.trim().isEmpty ? 'مطلوب' : null;
+  String? _required(String? value) => value == null || value.trim().isEmpty ? tr('مطلوب') : null;
 
   @override
   Widget build(BuildContext context) {
@@ -148,14 +149,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final missingDates = _error == 'missing-dates';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('حساب جديد')),
+      appBar: AppBar(title: Text(tr('حساب جديد'))),
       body: Form(
         key: _form,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             NoticeBanner(
-              'أهلاً بك! أكمل بياناتك مرة واحدة فقط. يتحقق الفرع من الهوية والرخصة عند استلام السيارة.',
+              tr('أهلاً بك! أكمل بياناتك مرة واحدة فقط. يتحقق الفرع من الهوية والرخصة عند استلام السيارة.'),
               color: AppColors.primary,
               icon: Icons.verified_user_outlined,
             ),
@@ -166,7 +167,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: TextFormField(
                     key: const Key('first_name'),
                     controller: _first,
-                    decoration: InputDecoration(labelText: 'الاسم الأول', errorText: _server('first_name')),
+                    decoration: InputDecoration(labelText: tr('الاسم الأول'), errorText: _server('first_name')),
                     validator: _required,
                   ),
                 ),
@@ -175,7 +176,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: TextFormField(
                     key: const Key('last_name'),
                     controller: _last,
-                    decoration: InputDecoration(labelText: 'اسم العائلة', errorText: _server('last_name')),
+                    decoration: InputDecoration(labelText: tr('اسم العائلة'), errorText: _server('last_name')),
                     validator: _required,
                   ),
                 ),
@@ -184,7 +185,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _idType,
-              decoration: const InputDecoration(labelText: 'نوع الهوية'),
+              decoration: InputDecoration(labelText: tr('نوع الهوية')),
               items: [for (final e in idTypes.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
               onChanged: (value) => setState(() => _idType = value!),
             ),
@@ -194,14 +195,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _idNumber,
               keyboardType: _idType == 'passport' ? TextInputType.text : TextInputType.number,
               textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: 'رقم الهوية', errorText: _server('id_number')),
+              decoration: InputDecoration(labelText: tr('رقم الهوية'), errorText: _server('id_number')),
               validator: _required,
             ),
             if (_idType != 'national_id') ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _nationality,
-                decoration: const InputDecoration(labelText: 'الجنسية'),
+                decoration: InputDecoration(labelText: tr('الجنسية')),
                 items: [for (final e in nationalities.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (value) => setState(() => _nationality = value!),
               ),
@@ -209,14 +210,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             const SizedBox(height: 12),
             _DateField(
               key: const Key('birth'),
-              label: 'تاريخ الميلاد',
+              label: tr('تاريخ الميلاد'),
               value: _birth == null ? null : date.format(_birth!),
-              error: _server('date_of_birth') ?? (missingDates && _birth == null ? 'مطلوب' : null),
+              error: _server('date_of_birth') ?? (missingDates && _birth == null ? tr('مطلوب') : null),
               onTap: _pickBirth,
             ),
             const SizedBox(height: 20),
-            const Text(
-              'رخصة القيادة',
+            Text(
+              tr('رخصة القيادة'),
               style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             const SizedBox(height: 8),
@@ -224,15 +225,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               key: const Key('license_number'),
               controller: _license,
               textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: 'رقم الرخصة', errorText: _server('license_number')),
+              decoration: InputDecoration(labelText: tr('رقم الرخصة'), errorText: _server('license_number')),
               validator: _required,
             ),
             const SizedBox(height: 12),
             _DateField(
               key: const Key('license_expiry'),
-              label: 'تاريخ انتهاء الرخصة',
+              label: tr('تاريخ انتهاء الرخصة'),
               value: _licenseExpiry == null ? null : date.format(_licenseExpiry!),
-              error: _server('license_expiry_date') ?? (missingDates && _licenseExpiry == null ? 'مطلوب' : null),
+              error: _server('license_expiry_date') ?? (missingDates && _licenseExpiry == null ? tr('مطلوب') : null),
               onTap: _pickExpiry,
             ),
             const SizedBox(height: 20),
@@ -241,13 +242,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: 'البريد الإلكتروني (اختياري)', errorText: _server('email')),
+              decoration: InputDecoration(labelText: tr('البريد الإلكتروني (اختياري)'), errorText: _server('email')),
             ),
             const SizedBox(height: 24),
-            BusyButton(key: const Key('register'), label: 'إنشاء الحساب', onPressed: _submit),
+            BusyButton(key: const Key('register'), label: tr('إنشاء الحساب'), onPressed: _submit),
             const SizedBox(height: 8),
             Text(
-              'الجوال: ${widget.claim.mobile}',
+              tr('الجوال: {0}', [widget.claim.mobile]),
               textAlign: TextAlign.center,
               style: const TextStyle(color: AppColors.muted, fontSize: 12),
             ),
@@ -272,7 +273,7 @@ class _DateField extends StatelessWidget {
     borderRadius: BorderRadius.circular(8),
     child: InputDecorator(
       decoration: InputDecoration(labelText: label, errorText: error, suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20)),
-      child: Text(value ?? 'اختر التاريخ', style: TextStyle(color: value == null ? AppColors.muted : AppColors.text)),
+      child: Text(value ?? tr('اختر التاريخ'), style: TextStyle(color: value == null ? AppColors.muted : AppColors.text)),
     ),
   );
 }

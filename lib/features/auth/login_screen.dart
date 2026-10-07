@@ -10,6 +10,7 @@ import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
 import 'register_screen.dart';
+import '../../core/i18n.dart';
 
 /// Sign in with the mobile number and the SMS code; a number the company doesn't know yet
 /// goes on to registration.
@@ -55,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _sendCode() async {
     final mobile = saudiMobile(_mobile.text);
     if (mobile == null) {
-      setState(() => _mobileError = 'أدخل رقم جوال سعودي صحيح، مثل 0551234567.');
+      setState(() => _mobileError = tr('أدخل رقم جوال سعودي صحيح، مثل 0551234567.'));
       return;
     }
 
@@ -79,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _verify() async {
     final code = westernDigits(_code.text).trim();
     if (!RegExp(r'^\d{6}$').hasMatch(code)) {
-      setState(() => _codeError = 'الرمز 6 أرقام.');
+      setState(() => _codeError = tr('الرمز 6 أرقام.'));
       return;
     }
 
@@ -109,8 +110,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           children: [
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                key: const Key('language'),
+                onPressed: AppLanguage.toggle,
+                icon: const Icon(Icons.language, size: 18),
+                label: Text(AppLanguage.otherName),
+              ),
+            ),
+            const SizedBox(height: 8),
             Center(child: Image.asset('assets/images/softix-logo.png', height: 64)),
             const SizedBox(height: 16),
             Text(
@@ -119,14 +130,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'احجز سيارتك وتابع عقودك وفواتيرك من جوالك',
+            Text(
+              tr('احجز سيارتك وتابع عقودك وفواتيرك من جوالك'),
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.muted),
             ),
             const SizedBox(height: 36),
             if (!codeStep) ...[
-              const Text('رقم الجوال', style: TextStyle(fontWeight: FontWeight.w600)),
+              Text(tr('رقم الجوال'), style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               TextField(
                 key: const Key('mobile'),
@@ -139,10 +150,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onSubmitted: (_) => _sendCode(),
               ),
               const SizedBox(height: 20),
-              BusyButton(key: const Key('send-code'), label: 'أرسل رمز التحقق', onPressed: _sendCode),
+              BusyButton(key: const Key('send-code'), label: tr('أرسل رمز التحقق'), onPressed: _sendCode),
             ] else ...[
               Text(
-                'أرسلنا رمزاً من 6 أرقام إلى',
+                tr('أرسلنا رمزاً من 6 أرقام إلى'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.muted),
               ),
@@ -170,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              BusyButton(key: const Key('verify'), label: 'دخول', onPressed: _verify),
+              BusyButton(key: const Key('verify'), label: tr('دخول'), onPressed: _verify),
               const SizedBox(height: 12),
               Wrap(
                 alignment: WrapAlignment.spaceBetween,
@@ -183,9 +194,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _wait = 0;
                       });
                     },
-                    child: const Text('تغيير الرقم'),
+                    child: Text(tr('تغيير الرقم')),
                   ),
-                  TextButton(onPressed: _wait > 0 ? null : _sendCode, child: Text(_wait > 0 ? 'إعادة الإرسال بعد $_wait ث' : 'إعادة إرسال الرمز')),
+                  TextButton(onPressed: _wait > 0 ? null : _sendCode, child: Text(_wait > 0 ? tr('إعادة الإرسال بعد {0} ث', [_wait]) : tr('إعادة إرسال الرمز'))),
                 ],
               ),
             ],
@@ -195,7 +206,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             OutlinedButton.icon(
               onPressed: () => context.push('/callback'),
               icon: const Icon(Icons.support_agent),
-              label: const Text('اطلب عرض سعر أو اتصالاً من فريقنا'),
+              label: Text(tr('اطلب عرض سعر أو اتصالاً من فريقنا')),
             ),
           ],
         ),

@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'api_client.dart';
 import 'firebase_config.dart';
+import 'i18n.dart';
 
 /// Notifications from the rental company (contract opened, return reminder, amount due…): the
 /// phone's Firebase token is registered after sign-in and removed before sign-out; tapping a
@@ -20,10 +21,10 @@ class PushService {
   /// Set by the app once the router exists: opens the screen for a notification's data.
   void Function(Map<String, dynamic> data)? onOpen;
 
-  static const _channel = AndroidNotificationChannel(
+  static final _channel = AndroidNotificationChannel(
     'customer_alerts',
-    'تنبيهات الإيجار',
-    description: 'العقود ومواعيد الإعادة والمبالغ المستحقة',
+    tr('تنبيهات الإيجار'),
+    description: tr('العقود ومواعيد الإعادة والمبالغ المستحقة'),
     importance: Importance.high,
   );
 

@@ -11,11 +11,15 @@ class FakeApi implements HttpClientAdapter {
   final Map<String, (int, Object?) Function(Map<String, dynamic> body, Map<String, dynamic> query)> routes;
   final calls = <(String, Map<String, dynamic>)>[];
 
+  /// The Accept-Language of the last request.
+  String? language;
+
   @override
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
     final key = '${options.method} ${options.path}';
     final body = options.data is Map ? Map<String, dynamic>.from(options.data as Map) : <String, dynamic>{};
     calls.add((key, body));
+    language = options.headers['Accept-Language'] as String?;
 
     final handler = routes[key];
     final (status, json) = handler == null ? (404, {'message': 'not faked: $key'}) : handler(body, options.queryParameters);

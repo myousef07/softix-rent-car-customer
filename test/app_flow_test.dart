@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:softix_customer/app.dart';
 import 'package:softix_customer/core/api_client.dart';
+import 'package:softix_customer/core/i18n.dart';
 import 'package:softix_customer/core/providers.dart';
 import 'package:softix_customer/core/session.dart';
 
@@ -18,6 +19,8 @@ void main() {
 
   late FakeApi api;
   late bool newNumber;
+
+  tearDown(() => AppLanguage.current.value = 'ar');
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
@@ -151,6 +154,32 @@ void main() {
     expect(find.text('RC-RUH-000019'), findsOneWidget);
     expect(find.textContaining('214.00'), findsWidgets);
     expect(find.byKey(const Key('pay')), findsOneWidget);
+  });
+
+  testWidgets('the renter switches to English and back; the app asks the server in that language', (tester) async {
+    await start(tester);
+    await tester.tap(find.byKey(const Key('language')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mobile number'), findsOneWidget);
+    expect(find.text('Book your car and follow your contracts and invoices from your phone'), findsOneWidget);
+    expect(Directionality.of(tester.element(find.byKey(const Key('mobile')))), TextDirection.ltr);
+    expect(find.text('العربية'), findsOneWidget);
+
+    await signIn(tester);
+    expect(api.language, 'en');
+    expect(find.text('Hello فهد'), findsOneWidget);
+    expect(find.text('Your current car'), findsOneWidget);
+
+    await tester.tap(find.text('My account'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('language')), 200, scrollable: _page);
+    await tester.tap(find.byKey(const Key('language')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('حسابي'), findsWidgets);
+    expect(Directionality.of(tester.element(find.text('حسابي').first)), TextDirection.rtl);
+    expect(await const FlutterSecureStorage().read(key: 'app_language'), 'ar');
   });
 
   testWidgets('a renter on a rental can return the car from the app, which asks for the photos first', (tester) async {

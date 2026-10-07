@@ -12,6 +12,7 @@ import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// Pickup (from a booking) or return (of a rental) without the counter: photos of the car from
 /// every side, the odometer and fuel, and at pickup a signature on the terms. The branch checks
@@ -30,8 +31,8 @@ class SelfServiceScreen extends ConsumerStatefulWidget {
 }
 
 class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
-  static const _sides = ['الأمام', 'الخلف', 'الجانب الأيمن', 'الجانب الأيسر'];
-  static const _fuel = ['فارغ', '1/8', '1/4', '3/8', '1/2', '5/8', '3/4', '7/8', 'ممتلئ'];
+  static List<String> get _sides => [tr('الأمام'), tr('الخلف'), tr('الجانب الأيمن'), tr('الجانب الأيسر')];
+  static List<String> get _fuel => [tr('فارغ'), '1/8', '1/4', '3/8', '1/2', '5/8', '3/4', '7/8', tr('ممتلئ')];
 
   final _form = GlobalKey<FormState>();
   final _odometer = TextEditingController();
@@ -57,10 +58,10 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
   Future<void> _submit() async {
     if (!_form.currentState!.validate()) return;
     if (_photos.length < widget.minPhotos) {
-      return showError(context, 'صوّر السيارة من الجهات الأربع على الأقل (${_photos.length} من ${widget.minPhotos}).');
+      return showError(context, tr('صوّر السيارة من الجهات الأربع على الأقل ({0} من {1}).', [_photos.length, widget.minPhotos]));
     }
-    if (widget.pickup && _signature.isEmpty) return showError(context, 'وقّع في المربع أولاً.');
-    if (widget.pickup && !_accepted) return showError(context, 'وافق على شروط العقد أولاً.');
+    if (widget.pickup && _signature.isEmpty) return showError(context, tr('وقّع في المربع أولاً.'));
+    if (widget.pickup && !_accepted) return showError(context, tr('وافق على شروط العقد أولاً.'));
 
     try {
       final body = <String, dynamic>{
@@ -73,7 +74,7 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
       final form = await toFormData(body, fileKey: 'photos', files: _photos);
       await ref.read(repositoryProvider).sendSelfService(pickup: widget.pickup, id: widget.id, form: form);
       if (!mounted) return;
-      showSuccess(context, 'أرسلنا الطلب للفرع. يصلك إشعار عند الاعتماد.');
+      showSuccess(context, tr('أرسلنا الطلب للفرع. يصلك إشعار عند الاعتماد.'));
       context.pop(true);
     } catch (error) {
       if (mounted) showError(context, error);
@@ -82,7 +83,7 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.pickup ? 'استلام السيارة' : 'تسليم السيارة')),
+    appBar: AppBar(title: Text(widget.pickup ? tr('استلام السيارة') : tr('تسليم السيارة'))),
     body: Form(
       key: _form,
       child: ListView(
@@ -90,20 +91,20 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
         children: [
           NoticeBanner(
             widget.pickup
-                ? 'افحص السيارة قبل الاستلام وصوّرها من كل الجهات، وأي ضرر موجود صوّره عن قرب. الفرع يراجع الصور ويفتح العقد.'
-                : 'أوقف السيارة في المكان المتفق عليه، وصوّرها من كل الجهات ولوحة العدادات. الفرع يراجع ويغلق العقد.',
+                ? tr('افحص السيارة قبل الاستلام وصوّرها من كل الجهات، وأي ضرر موجود صوّره عن قرب. الفرع يراجع الصور ويفتح العقد.')
+                : tr('أوقف السيارة في المكان المتفق عليه، وصوّرها من كل الجهات ولوحة العدادات. الفرع يراجع ويغلق العقد.'),
             color: AppColors.primary,
             icon: Icons.photo_camera_outlined,
           ),
           const SizedBox(height: 12),
           SectionCard(
-            title: 'صور السيارة (${_photos.length})',
-            trailing: TextButton.icon(onPressed: _addPhoto, icon: const Icon(Icons.add_a_photo_outlined), label: const Text('صورة')),
+            title: tr('صور السيارة ({0})', [_photos.length]),
+            trailing: TextButton.icon(onPressed: _addPhoto, icon: const Icon(Icons.add_a_photo_outlined), label: Text(tr('صورة'))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  _photos.length < _sides.length ? 'التالية: ${_sides[_photos.length]}' : 'أضف صوراً لأي ضرر أو للعدادات.',
+                  _photos.length < _sides.length ? tr('التالية: {0}', [_sides[_photos.length]]) : tr('أضف صوراً لأي ضرر أو للعدادات.'),
                   style: const TextStyle(color: AppColors.muted),
                 ),
                 if (_photos.isNotEmpty) ...[
@@ -115,7 +116,7 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
                       for (var i = 0; i < _photos.length; i++)
                         InputChip(
                           avatar: const Icon(Icons.image_outlined, size: 18),
-                          label: Text(i < _sides.length ? _sides[i] : 'صورة ${i + 1}'),
+                          label: Text(i < _sides.length ? _sides[i] : tr('صورة {0}', [i + 1])),
                           onDeleted: () => setState(() => _photos.removeAt(i)),
                         ),
                     ],
@@ -126,7 +127,7 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
           ),
           const SizedBox(height: 12),
           SectionCard(
-            title: 'القراءات',
+            title: tr('القراءات'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -134,13 +135,13 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
                   controller: _odometer,
                   keyboardType: TextInputType.number,
                   textDirection: TextDirection.ltr,
-                  decoration: const InputDecoration(labelText: 'قراءة العداد', suffixText: 'كم'),
-                  validator: (value) => int.tryParse(value?.trim() ?? '') == null ? 'أدخل قراءة العداد' : null,
+                  decoration: InputDecoration(labelText: tr('قراءة العداد'), suffixText: tr('كم')),
+                  validator: (value) => int.tryParse(value?.trim() ?? '') == null ? tr('أدخل قراءة العداد') : null,
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Text('مستوى الوقود'),
+                    Text(tr('مستوى الوقود')),
                     const Spacer(),
                     Text(_fuel[_fuelLevel], style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary)),
                   ],
@@ -156,7 +157,7 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
                   controller: _notes,
                   maxLines: 2,
                   maxLength: 500,
-                  decoration: const InputDecoration(labelText: 'ملاحظات (اختياري)', hintText: 'مثل: خدش في الباب الخلفي'),
+                  decoration: InputDecoration(labelText: tr('ملاحظات (اختياري)'), hintText: tr('مثل: خدش في الباب الخلفي')),
                 ),
               ],
             ),
@@ -164,8 +165,8 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
           if (widget.pickup) ...[
             const SizedBox(height: 12),
             SectionCard(
-              title: 'التوقيع',
-              trailing: TextButton(onPressed: _signature.clear, child: const Text('مسح')),
+              title: tr('التوقيع'),
+              trailing: TextButton(onPressed: _signature.clear, child: Text(tr('مسح'))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -180,14 +181,14 @@ class _SelfServiceScreenState extends ConsumerState<SelfServiceScreen> {
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _accepted,
                     onChanged: (value) => setState(() => _accepted = value ?? false),
-                    title: const Text('اطلعت على حالة السيارة وشروط العقد ووافقت عليها'),
+                    title: Text(tr('اطلعت على حالة السيارة وشروط العقد ووافقت عليها')),
                   ),
                 ],
               ),
             ),
           ],
           const SizedBox(height: 16),
-          BusyButton(label: widget.pickup ? 'إرسال طلب الاستلام' : 'إرسال طلب التسليم', icon: Icons.send_outlined, onPressed: _submit),
+          BusyButton(label: widget.pickup ? tr('إرسال طلب الاستلام') : tr('إرسال طلب التسليم'), icon: Icons.send_outlined, onPressed: _submit),
         ],
       ),
     ),
@@ -221,20 +222,20 @@ class _SelfServiceCardState extends ConsumerState<SelfServiceCard> {
       final status = snapshot.data;
       if (status == null) return const SizedBox.shrink();
       // A company without self-service: nothing to show.
-      if (!status.available && !status.isPending && (status.reason ?? '').contains('غير مفعّل')) return const SizedBox.shrink();
+      if (!status.available && !status.isPending && (status.reason ?? '').contains(tr('غير مفعّل'))) return const SizedBox.shrink();
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: SectionCard(
-          title: widget.pickup ? 'الاستلام من التطبيق' : 'التسليم من التطبيق',
+          title: widget.pickup ? tr('الاستلام من التطبيق') : tr('التسليم من التطبيق'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (status.isPending)
-                NoticeBanner('طلبك ${status.pendingLabel}. يصلك إشعار عند الاعتماد.', icon: Icons.hourglass_top_outlined)
+                NoticeBanner(tr('طلبك {0}. يصلك إشعار عند الاعتماد.', [status.pendingLabel]), icon: Icons.hourglass_top_outlined)
               else ...[
                 if (status.rejectedReason != null) ...[
-                  NoticeBanner('لم يُعتمد الطلب السابق: ${status.rejectedReason}', color: AppColors.danger),
+                  NoticeBanner(tr('لم يُعتمد الطلب السابق: {0}', [status.rejectedReason]), color: AppColors.danger),
                   const SizedBox(height: 8),
                 ],
                 if (status.available)
@@ -246,7 +247,7 @@ class _SelfServiceCardState extends ConsumerState<SelfServiceCard> {
                       if (sent == true && mounted) setState(() => _status = _load());
                     },
                     icon: Icon(widget.pickup ? Icons.key_outlined : Icons.assignment_return_outlined),
-                    label: Text(widget.pickup ? 'استلم السيارة الآن' : 'سلّم السيارة الآن'),
+                    label: Text(widget.pickup ? tr('استلم السيارة الآن') : tr('سلّم السيارة الآن')),
                   )
                 else
                   Text(status.reason ?? '', style: const TextStyle(color: AppColors.muted)),

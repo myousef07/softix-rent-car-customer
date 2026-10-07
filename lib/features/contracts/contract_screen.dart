@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import '../self_service/self_service_screen.dart';
+import '../../core/i18n.dart';
 
 /// One rental: the car, the dates, what was charged, what is still due, and the way to pay it.
 class ContractScreen extends ConsumerStatefulWidget {
@@ -72,7 +73,7 @@ class _ContractScreenState extends ConsumerState<ContractScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('تفاصيل العقد')),
+    appBar: AppBar(title: Text(tr('تفاصيل العقد'))),
     body: FutureBuilder<Contract>(
       future: _contract,
       builder: (context, snapshot) {
@@ -88,51 +89,51 @@ class _ContractScreenState extends ConsumerState<ContractScreen> {
             children: [
               if (c.isOverdue) ...[
                 NoticeBanner(
-                  'تجاوزت موعد الإعادة ${Fmt.dateTime(c.expectedReturnAt)} وتُحتسب رسوم التأخير. أعد السيارة أو اتصل بالفرع للتمديد.',
+                  tr('تجاوزت موعد الإعادة {0} وتُحتسب رسوم التأخير. أعد السيارة أو اتصل بالفرع للتمديد.', [Fmt.dateTime(c.expectedReturnAt)]),
                   color: AppColors.danger,
                   icon: Icons.warning_amber_rounded,
                 ),
                 const SizedBox(height: 12),
               ],
               if (balance != null && balance.hasDue) ...[
-                NoticeBanner('مستحق عليك ${Fmt.money(balance.due)}', color: AppColors.warning, icon: Icons.account_balance_wallet_outlined),
+                NoticeBanner(tr('مستحق عليك {0}', [Fmt.money(balance.due)]), color: AppColors.warning, icon: Icons.account_balance_wallet_outlined),
                 const SizedBox(height: 12),
               ],
               SectionCard(
-                title: c.car ?? 'السيارة',
-                trailing: StatusChip(c.isOverdue ? 'متأخر' : c.statusLabel, color: StatusChip.forContract(c.status, c.isOverdue)),
+                title: c.car ?? tr('السيارة'),
+                trailing: StatusChip(c.isOverdue ? tr('متأخر') : c.statusLabel, color: StatusChip.forContract(c.status, c.isOverdue)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Expanded(child: InfoItem('رقم العقد', c.number, ltr: true)),
-                        if (c.plate != null) Expanded(child: InfoItem('اللوحة', c.plate!)),
+                        Expanded(child: InfoItem(tr('رقم العقد'), c.number, ltr: true)),
+                        if (c.plate != null) Expanded(child: InfoItem(tr('اللوحة'), c.plate!)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: InfoItem('الخروج', Fmt.dateTime(c.startAt))),
+                        Expanded(child: InfoItem(tr('الخروج'), Fmt.dateTime(c.startAt))),
                         Expanded(
                           child: c.actualReturnAt != null
-                              ? InfoItem('العودة', Fmt.dateTime(c.actualReturnAt))
-                              : InfoItem('موعد الإعادة', Fmt.dateTime(c.expectedReturnAt), valueColor: c.isOverdue ? AppColors.danger : null),
+                              ? InfoItem(tr('العودة'), Fmt.dateTime(c.actualReturnAt))
+                              : InfoItem(tr('موعد الإعادة'), Fmt.dateTime(c.expectedReturnAt), valueColor: c.isOverdue ? AppColors.danger : null),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: InfoItem('فرع الخروج', c.branch?.name ?? '—')),
-                        Expanded(child: InfoItem('فرع الإعادة', (c.returnBranch ?? c.branch)?.name ?? '—')),
+                        Expanded(child: InfoItem(tr('فرع الخروج'), c.branch?.name ?? '—')),
+                        Expanded(child: InfoItem(tr('فرع الإعادة'), (c.returnBranch ?? c.branch)?.name ?? '—')),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: InfoItem('المدة', Fmt.days(c.days))),
-                        Expanded(child: InfoItem('الكيلومترات المشمولة', c.includedKm == null ? 'مفتوحة' : '${c.includedKm} كم')),
+                        Expanded(child: InfoItem(tr('المدة'), Fmt.days(c.days))),
+                        Expanded(child: InfoItem(tr('الكيلومترات المشمولة'), c.includedKm == null ? tr('مفتوحة') : tr('{0} كم', [c.includedKm]))),
                       ],
                     ),
                   ],
@@ -140,43 +141,43 @@ class _ContractScreenState extends ConsumerState<ContractScreen> {
               ),
               const SizedBox(height: 12),
               SectionCard(
-                title: 'البنود',
+                title: tr('البنود'),
                 child: Column(
                   children: [
                     for (final charge in c.charges) AmountRow(charge.description, Fmt.money(charge.amount)),
-                    AmountRow('الضريبة', Fmt.money(c.vat)),
+                    AmountRow(tr('الضريبة'), Fmt.money(c.vat)),
                     const Divider(height: 16),
-                    AmountRow('الإجمالي', Fmt.money(c.total), bold: true),
+                    AmountRow(tr('الإجمالي'), Fmt.money(c.total), bold: true),
                   ],
                 ),
               ),
               if (balance != null) ...[
                 const SizedBox(height: 12),
                 SectionCard(
-                  title: 'الحساب',
+                  title: tr('الحساب'),
                   child: Column(
                     children: [
-                      AmountRow('المفوتر', Fmt.money(balance.invoiced)),
-                      AmountRow('المدفوع', Fmt.money(balance.paid), color: AppColors.success),
+                      AmountRow(tr('المفوتر'), Fmt.money(balance.invoiced)),
+                      AmountRow(tr('المدفوع'), Fmt.money(balance.paid), color: AppColors.success),
                       const Divider(height: 16),
-                      AmountRow('المتبقي', Fmt.money(balance.due), bold: true, color: balance.hasDue ? AppColors.danger : null),
+                      AmountRow(tr('المتبقي'), Fmt.money(balance.due), bold: true, color: balance.hasDue ? AppColors.danger : null),
                     ],
                   ),
                 ),
               ],
               const SizedBox(height: 16),
               if (balance != null && balance.hasDue) ...[
-                BusyButton(key: const Key('pay'), icon: Icons.credit_card, label: 'ادفع ${Fmt.money(balance.due)} إلكترونياً', onPressed: () => _pay(c)),
+                BusyButton(key: const Key('pay'), icon: Icons.credit_card, label: tr('ادفع {0} إلكترونياً', [Fmt.money(balance.due)]), onPressed: () => _pay(c)),
                 const SizedBox(height: 8),
               ],
-              BusyButton(outlined: true, icon: Icons.picture_as_pdf_outlined, label: 'نسخة العقد (PDF)', onPressed: () => _pdf(c)),
+              BusyButton(outlined: true, icon: Icons.picture_as_pdf_outlined, label: tr('نسخة العقد (PDF)'), onPressed: () => _pdf(c)),
               if (c.isOpen) ...[const SizedBox(height: 12), SelfServiceCard(key: ValueKey('return-${c.id}'), pickup: false, id: c.id)],
               if (c.branch?.phone != null) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: () => callPhone((c.returnBranch ?? c.branch)!.phone ?? c.branch!.phone!),
                   icon: const Icon(Icons.call_outlined),
-                  label: Text(c.isOpen ? 'اتصل بالفرع للتمديد أو الاستفسار' : 'اتصل بالفرع'),
+                  label: Text(c.isOpen ? tr('اتصل بالفرع للتمديد أو الاستفسار') : tr('اتصل بالفرع')),
                 ),
               ],
             ],

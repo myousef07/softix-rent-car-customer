@@ -92,7 +92,7 @@ Map<String, Object?> reservation({String status = 'confirmed', String label = '�
   'vat': '54.00',
   'total': '414.00',
   'deposit_amount': '500.00',
-  'category': {'id': 1, 'name': 'اقتصادية'},
+  'category': {'id': 1, 'name': 'اقتصادية', 'image_url': 'https://rent.example.sa/storage/vehicle-categories/eco.png'},
   'branch': branch,
   'return_branch': branch,
   'extras': [],

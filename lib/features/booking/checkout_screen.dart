@@ -147,6 +147,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (offer.category.imageUrl != null) ...[CarImage(offer.category.imageUrl, height: 160), const SizedBox(height: 12)],
                 if (offer.modelsLine.isNotEmpty) Text(offer.modelsLine, style: const TextStyle(color: AppColors.muted)),
                 const SizedBox(height: 12),
                 Row(

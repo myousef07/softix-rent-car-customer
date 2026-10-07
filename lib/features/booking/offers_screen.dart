@@ -105,16 +105,19 @@ class _OfferCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (offer.category.imageUrl != null) ...[CarImage(offer.category.imageUrl, height: 140), const SizedBox(height: 12)],
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.directions_car_filled, color: AppColors.primary, size: 30),
-                    ),
-                    const SizedBox(width: 12),
+                    if (offer.category.imageUrl == null) ...[
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.directions_car_filled, color: AppColors.primary, size: 30),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

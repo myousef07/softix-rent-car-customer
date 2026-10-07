@@ -105,14 +105,21 @@ class Branch {
 }
 
 class Category {
-  Category({required this.id, required this.name, this.description});
+  Category({required this.id, required this.name, this.description, this.imageUrl});
 
   final int id;
   final String name;
   final String? description;
 
-  factory Category.fromJson(Map<String, dynamic> json) =>
-      Category(id: json['id'] as int, name: json['name'] as String, description: json['description'] as String?);
+  /// A photo of a car in this category, uploaded by the company (or its catalogue model).
+  final String? imageUrl;
+
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+    id: json['id'] as int,
+    name: json['name'] as String,
+    description: json['description'] as String?,
+    imageUrl: json['image_url'] as String?,
+  );
 }
 
 class Extra {

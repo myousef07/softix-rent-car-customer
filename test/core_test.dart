@@ -82,6 +82,11 @@ void main() {
   });
 
   group('models', () {
+    test('category picture is optional', () {
+      expect(Category.fromJson({'id': 1, 'name': 'اقتصادية'}).imageUrl, isNull);
+      expect(Category.fromJson({'id': 1, 'name': 'اقتصادية', 'image_url': 'https://x.sa/storage/eco.png'}).imageUrl, 'https://x.sa/storage/eco.png');
+    });
+
     test('profile with address and licence warning', () {
       final p = Profile.fromJson({...customer, 'license_expiry_date': DateTime.now().add(const Duration(days: 10)).toIso8601String().substring(0, 10)});
       expect(p.localMobile, '0551234567');

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/config.dart';
+import 'core/i18n.dart';
 import 'core/push.dart';
 import 'core/session.dart';
 import 'core/theme.dart';
@@ -19,6 +20,7 @@ import 'features/home/home_shell.dart';
 import 'features/home/splash_screen.dart';
 import 'features/invoices/invoices_screen.dart';
 import 'features/reservations/reservation_screen.dart';
+import 'features/self_service/self_service_screen.dart';
 
 /// Screens anyone may open before signing in.
 const _public = {'/login', '/register', '/callback'};
@@ -77,6 +79,14 @@ class _CustomerAppState extends State<CustomerApp> {
             path: 'contracts/:id',
             builder: (_, state) => ContractScreen(id: int.parse(state.pathParameters['id']!)),
           ),
+          GoRoute(
+            path: 'self-service/:type/:id',
+            builder: (_, state) => SelfServiceScreen(
+              pickup: state.pathParameters['type'] == 'pickup',
+              id: int.parse(state.pathParameters['id']!),
+              minPhotos: int.tryParse(state.uri.queryParameters['photos'] ?? '') ?? 4,
+            ),
+          ),
           GoRoute(path: 'invoices', builder: (_, _) => const InvoicesScreen()),
           GoRoute(path: 'profile', builder: (_, _) => const EditProfileScreen()),
           GoRoute(path: 'branches', builder: (_, _) => const BranchesScreen()),
@@ -96,13 +106,19 @@ class _CustomerAppState extends State<CustomerApp> {
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-    title: AppConfig.companyName,
-    debugShowCheckedModeBanner: false,
-    theme: buildTheme(),
-    locale: const Locale('ar'),
-    supportedLocales: const [Locale('ar')],
-    localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    routerConfig: _router,
+  Widget build(BuildContext context) => ValueListenableBuilder<String>(
+    valueListenable: AppLanguage.current,
+    // A new key rebuilds every screen in the chosen language (and direction); the router keeps
+    // the current page.
+    builder: (context, language, _) => MaterialApp.router(
+      key: ValueKey(language),
+      title: AppConfig.companyName,
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(),
+      locale: Locale(language),
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      routerConfig: _router,
+    ),
   );
 }

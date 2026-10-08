@@ -7,6 +7,7 @@ import '../../core/format.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 class AccountTab extends ConsumerWidget {
   const AccountTab({super.key});
@@ -15,11 +16,11 @@ class AccountTab extends ConsumerWidget {
     final sure = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تسجيل الخروج؟'),
-        content: const Text('ستحتاج رمز تحقق جديداً للدخول مرة أخرى.'),
+        title: Text(tr('تسجيل الخروج؟')),
+        content: Text(tr('ستحتاج رمز تحقق جديداً للدخول مرة أخرى.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('تراجع')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('خروج')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('تراجع'))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('خروج'))),
         ],
       ),
     );
@@ -33,7 +34,7 @@ class AccountTab extends ConsumerWidget {
     if (profile == null) return const SizedBox.shrink();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('حسابي')),
+      appBar: AppBar(title: Text(tr('حسابي'))),
       body: ListenableBuilder(
         listenable: session,
         builder: (context, _) {
@@ -49,7 +50,7 @@ class AccountTab extends ConsumerWidget {
                       radius: 28,
                       backgroundColor: AppColors.primarySoft,
                       child: Text(
-                        p.firstName.isEmpty ? '؟' : p.firstName.characters.first,
+                        p.firstName.isEmpty ? tr('؟') : p.firstName.characters.first,
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary),
                       ),
                     ),
@@ -76,16 +77,16 @@ class AccountTab extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               SectionCard(
-                title: 'الهوية والرخصة',
+                title: tr('الهوية والرخصة'),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Expanded(child: InfoItem('رقم الهوية', p.idNumber ?? '—', ltr: true)),
+                        Expanded(child: InfoItem(tr('رقم الهوية'), p.idNumber ?? '—', ltr: true)),
                         Expanded(
                           child: InfoItem(
-                            'انتهاء الرخصة',
+                            tr('انتهاء الرخصة'),
                             p.licenseExpiry == null ? '—' : Fmt.date(p.licenseExpiry),
                             valueColor: p.licenseExpiringSoon ? AppColors.danger : null,
                           ),
@@ -93,7 +94,7 @@ class AccountTab extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    const Text('لتعديل الهوية أو الرخصة أو رقم الجوال راجع أقرب فرع ومعك الأصل.', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    Text(tr('لتعديل الهوية أو الرخصة أو رقم الجوال راجع أقرب فرع ومعك الأصل.'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                   ],
                 ),
               ),
@@ -101,23 +102,25 @@ class AccountTab extends ConsumerWidget {
               Card(
                 child: Column(
                   children: [
-                    _Item(icon: Icons.edit_outlined, label: 'البريد والعنوان الوطني', onTap: () => context.push('/profile')),
+                    _Item(icon: Icons.edit_outlined, label: tr('البريد والعنوان الوطني'), onTap: () => context.push('/profile')),
                     const Divider(),
-                    _Item(icon: Icons.receipt_long_outlined, label: 'فواتيري', onTap: () => context.push('/invoices')),
+                    _Item(icon: Icons.receipt_long_outlined, label: tr('فواتيري'), onTap: () => context.push('/invoices')),
                     const Divider(),
-                    _Item(icon: Icons.location_on_outlined, label: 'الفروع وأرقام التواصل', onTap: () => context.push('/branches')),
+                    _Item(icon: Icons.location_on_outlined, label: tr('الفروع وأرقام التواصل'), onTap: () => context.push('/branches')),
                     const Divider(),
-                    _Item(icon: Icons.support_agent, label: 'عرض سعر للتأجير الشهري أو للشركات', onTap: () => context.push('/callback')),
+                    _Item(icon: Icons.support_agent, label: tr('عرض سعر للتأجير الشهري أو للشركات'), onTap: () => context.push('/callback')),
+                    const Divider(),
+                    _Item(key: const Key('language'), icon: Icons.language, label: AppLanguage.otherName, onTap: AppLanguage.toggle),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
               Card(
-                child: _Item(icon: Icons.logout, label: 'تسجيل الخروج', color: AppColors.danger, onTap: () => _signOut(context, ref)),
+                child: _Item(icon: Icons.logout, label: tr('تسجيل الخروج'), color: AppColors.danger, onTap: () => _signOut(context, ref)),
               ),
               const SizedBox(height: 20),
               Text(
-                '${AppConfig.companyName}\nبواسطة SOftiX Rent Car',
+                tr('{0}\nبواسطة SOftiX Rent Car', [AppConfig.companyName]),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.muted, fontSize: 12, height: 1.6),
               ),
@@ -130,7 +133,7 @@ class AccountTab extends ConsumerWidget {
 }
 
 class _Item extends StatelessWidget {
-  const _Item({required this.icon, required this.label, required this.onTap, this.color});
+  const _Item({super.key, required this.icon, required this.label, required this.onTap, this.color});
 
   final IconData icon;
   final String label;
@@ -144,7 +147,7 @@ class _Item extends StatelessWidget {
       label,
       style: TextStyle(color: color, fontWeight: FontWeight.w600),
     ),
-    trailing: color == null ? const Icon(Icons.chevron_left) : null,
+    trailing: color == null ? const Icon(Icons.chevron_right) : null,
     onTap: onTap,
   );
 }

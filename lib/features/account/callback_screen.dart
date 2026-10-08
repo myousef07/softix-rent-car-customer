@@ -8,6 +8,7 @@ import '../../core/api_exception.dart';
 import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
+import '../../core/i18n.dart';
 
 /// «Send me a quote / call me back», with or without an account: monthly rentals, leases and
 /// company accounts are priced by the sales team.
@@ -19,13 +20,13 @@ class CallbackScreen extends ConsumerStatefulWidget {
 }
 
 class _CallbackScreenState extends ConsumerState<CallbackScreen> {
-  static const interests = {
-    'daily': 'إيجار يومي',
-    'monthly': 'إيجار شهري',
-    'lease': 'تأجير طويل / تمليك',
-    'corporate': 'حساب شركة',
-    'delivery': 'توصيل السيارة',
-    'other': 'أخرى',
+  static Map<String, String> get interests => {
+    'daily': tr('إيجار يومي'),
+    'monthly': tr('إيجار شهري'),
+    'lease': tr('تأجير طويل / تمليك'),
+    'corporate': tr('حساب شركة'),
+    'delivery': tr('توصيل السيارة'),
+    'other': tr('أخرى'),
   };
 
   late final _profile = ref.read(sessionProvider).profile;
@@ -52,8 +53,8 @@ class _CallbackScreenState extends ConsumerState<CallbackScreen> {
         () => _error = ApiException(
           '',
           fieldErrors: {
-            if (_name.text.trim().isEmpty) 'name': ['اكتب اسمك.'],
-            if (mobile == null) 'mobile': ['أدخل رقم جوال سعودي صحيح.'],
+            if (_name.text.trim().isEmpty) 'name': [tr('اكتب اسمك.')],
+            if (mobile == null) 'mobile': [tr('أدخل رقم جوال سعودي صحيح.')],
           },
         ),
       );
@@ -85,9 +86,9 @@ class _CallbackScreenState extends ConsumerState<CallbackScreen> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
-        title: const Text('وصل طلبك'),
-        content: Text('سيتواصل معك فريقنا قريباً.${reference.isNotEmpty ? '\nرقم الطلب: $reference' : ''}', textAlign: TextAlign.center),
-        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('تم'))],
+        title: Text(tr('وصل طلبك')),
+        content: Text(tr('سيتواصل معك فريقنا قريباً.{0}', [reference.isNotEmpty ? tr('\nرقم الطلب: {0}', [reference]) : '']), textAlign: TextAlign.center),
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(tr('تم')))],
       ),
     );
     if (mounted) context.pop();
@@ -95,11 +96,11 @@ class _CallbackScreenState extends ConsumerState<CallbackScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('اطلب عرض سعر')),
+    appBar: AppBar(title: Text(tr('اطلب عرض سعر'))),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('اترك بياناتك ويتصل بك فريق المبيعات بأفضل سعر.', style: TextStyle(color: AppColors.muted)),
+        Text(tr('اترك بياناتك ويتصل بك فريق المبيعات بأفضل سعر.'), style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 16),
         Wrap(
           spacing: 8,
@@ -113,7 +114,7 @@ class _CallbackScreenState extends ConsumerState<CallbackScreen> {
         TextField(
           key: const Key('lead-name'),
           controller: _name,
-          decoration: InputDecoration(labelText: 'الاسم', errorText: fieldError(_error, 'name')),
+          decoration: InputDecoration(labelText: tr('الاسم'), errorText: fieldError(_error, 'name')),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -121,30 +122,30 @@ class _CallbackScreenState extends ConsumerState<CallbackScreen> {
           controller: _mobile,
           keyboardType: TextInputType.phone,
           textDirection: TextDirection.ltr,
-          decoration: InputDecoration(labelText: 'الجوال', hintText: '05XXXXXXXX', errorText: fieldError(_error, 'mobile')),
+          decoration: InputDecoration(labelText: tr('الجوال'), hintText: '05XXXXXXXX', errorText: fieldError(_error, 'mobile')),
         ),
         if (_interest == 'corporate' || _interest == 'lease') ...[
           const SizedBox(height: 12),
           TextField(
             controller: _company,
-            decoration: const InputDecoration(labelText: 'اسم المنشأة (اختياري)'),
+            decoration: InputDecoration(labelText: tr('اسم المنشأة (اختياري)')),
           ),
         ],
         const SizedBox(height: 12),
         TextField(
           controller: _days,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: 'المدة بالأيام (اختياري)', errorText: fieldError(_error, 'days')),
+          decoration: InputDecoration(labelText: tr('المدة بالأيام (اختياري)'), errorText: fieldError(_error, 'days')),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _message,
           maxLines: 3,
           maxLength: 1000,
-          decoration: InputDecoration(labelText: 'تفاصيل (اختياري)', errorText: fieldError(_error, 'message')),
+          decoration: InputDecoration(labelText: tr('تفاصيل (اختياري)'), errorText: fieldError(_error, 'message')),
         ),
         const SizedBox(height: 12),
-        BusyButton(key: const Key('send-lead'), label: 'أرسل الطلب', onPressed: _send),
+        BusyButton(key: const Key('send-lead'), label: tr('أرسل الطلب'), onPressed: _send),
       ],
     ),
   );

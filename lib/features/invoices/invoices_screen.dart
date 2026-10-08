@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/paged_list.dart';
+import '../../core/i18n.dart';
 
 /// Tax invoices and credit notes; tapping one opens the PDF with its ZATCA QR code.
 class InvoicesScreen extends ConsumerWidget {
@@ -15,10 +16,10 @@ class InvoicesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('فواتيري')),
+    appBar: AppBar(title: Text(tr('فواتيري'))),
     body: PagedList<Invoice>(
       fetch: (cursor) => ref.read(repositoryProvider).invoices(cursor: cursor),
-      empty: 'لا توجد فواتير بعد.',
+      empty: tr('لا توجد فواتير بعد.'),
       itemBuilder: (context, invoice) => Card(
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -41,10 +42,10 @@ class InvoicesScreen extends ConsumerWidget {
           ),
           subtitle: Text(
             [
-              if (invoice.isCreditNote) 'إشعار دائن',
+              if (invoice.isCreditNote) tr('إشعار دائن'),
               Fmt.date(invoice.issuedAt),
-              if (invoice.contractNumber != null) 'عقد ${invoice.contractNumber}',
-              if ((double.tryParse(invoice.due) ?? 0) > 0) 'المتبقي ${Fmt.money(invoice.due)}',
+              if (invoice.contractNumber != null) tr('عقد {0}', [invoice.contractNumber]),
+              if ((double.tryParse(invoice.due) ?? 0) > 0) tr('المتبقي {0}', [Fmt.money(invoice.due)]),
             ].join(' · '),
           ),
           trailing: Text(

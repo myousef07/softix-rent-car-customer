@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import 'booking_draft.dart';
+import '../../core/i18n.dart';
 
 /// Every category at the branch for the chosen dates, with its full price.
 class OffersScreen extends ConsumerStatefulWidget {
@@ -30,7 +31,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
     final s = widget.search;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('اختر الفئة')),
+      appBar: AppBar(title: Text(tr('اختر الفئة'))),
       body: Column(
         children: [
           Container(
@@ -58,7 +59,7 @@ class _OffersScreenState extends ConsumerState<OffersScreen> {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
                 final offers = [...snapshot.data!]..sort((a, b) => (a.available == b.available) ? 0 : (a.available ? -1 : 1));
-                if (offers.isEmpty) return const EmptyState('لا توجد فئات متاحة في هذا الفرع.', icon: Icons.car_rental);
+                if (offers.isEmpty) return EmptyState(tr('لا توجد فئات متاحة في هذا الفرع.'), icon: Icons.car_rental);
 
                 return ListView.separated(
                   padding: const EdgeInsets.all(12),
@@ -105,16 +106,19 @@ class _OfferCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (offer.category.imageUrl != null) ...[CarImage(offer.category.imageUrl, height: 140), const SizedBox(height: 12)],
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.directions_car_filled, color: AppColors.primary, size: 30),
-                    ),
-                    const SizedBox(width: 12),
+                    if (offer.category.imageUrl == null) ...[
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.directions_car_filled, color: AppColors.primary, size: 30),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,9 +148,9 @@ class _OfferCard extends StatelessWidget {
                   spacing: 14,
                   runSpacing: 6,
                   children: [
-                    if (offer.seats != null) _Spec(Icons.event_seat_outlined, '${offer.seats} مقاعد'),
-                    _Spec(Icons.speed, q.includedKm == null ? 'كيلومترات مفتوحة' : '${q.includedKm} كم مشمولة'),
-                    _Spec(Icons.shield_outlined, 'تأمين ${Fmt.money(q.deposit)} مسترد'),
+                    if (offer.seats != null) _Spec(Icons.event_seat_outlined, tr('{0} مقاعد', [offer.seats])),
+                    _Spec(Icons.speed, q.includedKm == null ? tr('كيلومترات مفتوحة') : tr('{0} كم مشمولة', [q.includedKm])),
+                    _Spec(Icons.shield_outlined, tr('تأمين {0} مسترد', [Fmt.money(q.deposit)])),
                   ],
                 ),
                 const Divider(height: 24),
@@ -154,9 +158,9 @@ class _OfferCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: offer.available
-                          ? Text('${Fmt.money(q.perDay.toStringAsFixed(2))} / يوم قبل الضريبة', style: const TextStyle(color: AppColors.muted, fontSize: 12))
-                          : const Text(
-                              'غير متاحة في هذه الفترة',
+                          ? Text(tr('{0} / يوم قبل الضريبة', [Fmt.money(q.perDay.toStringAsFixed(2))]), style: const TextStyle(color: AppColors.muted, fontSize: 12))
+                          : Text(
+                              tr('غير متاحة في هذه الفترة'),
                               style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600),
                             ),
                     ),
@@ -168,7 +172,7 @@ class _OfferCard extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primaryDark),
                         ),
-                        Text('الإجمالي لـ ${Fmt.days(q.days)} شامل الضريبة', style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+                        Text(tr('الإجمالي لـ {0} شامل الضريبة', [Fmt.days(q.days)]), style: const TextStyle(color: AppColors.muted, fontSize: 11)),
                       ],
                     ),
                   ],

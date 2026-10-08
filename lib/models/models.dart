@@ -2,6 +2,8 @@
 /// them, so nothing is lost to floating point before it is shown.
 library;
 
+import '../core/i18n.dart';
+
 Map<String, dynamic> _map(Object? value) => Map<String, dynamic>.from(value as Map);
 
 List<T> _list<T>(Object? value, T Function(Map<String, dynamic>) item) => (value as List? ?? const []).map((e) => item(_map(e))).toList();
@@ -17,7 +19,7 @@ class Address {
 
   bool get isEmpty => [city, district, street, buildingNumber, postalCode].every((v) => v == null || v.isEmpty);
 
-  String get line => [street, district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
+  String get line => [street, district, city].whereType<String>().where((s) => s.isNotEmpty).join(tr('، '));
 
   factory Address.fromJson(Map<String, dynamic>? json) => Address(
     city: json?['city'] as String?,
@@ -90,7 +92,7 @@ class Branch {
   final double? latitude;
   final double? longitude;
 
-  String get place => [district, city].whereType<String>().where((s) => s.isNotEmpty).join('، ');
+  String get place => [district, city].whereType<String>().where((s) => s.isNotEmpty).join(tr('، '));
 
   factory Branch.fromJson(Map<String, dynamic> json) => Branch(
     id: json['id'] as int,
@@ -105,14 +107,21 @@ class Branch {
 }
 
 class Category {
-  Category({required this.id, required this.name, this.description});
+  Category({required this.id, required this.name, this.description, this.imageUrl});
 
   final int id;
   final String name;
   final String? description;
 
-  factory Category.fromJson(Map<String, dynamic> json) =>
-      Category(id: json['id'] as int, name: json['name'] as String, description: json['description'] as String?);
+  /// A photo of a car in this category, uploaded by the company (or its catalogue model).
+  final String? imageUrl;
+
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+    id: json['id'] as int,
+    name: json['name'] as String,
+    description: json['description'] as String?,
+    imageUrl: json['image_url'] as String?,
+  );
 }
 
 class Extra {
@@ -124,7 +133,7 @@ class Extra {
   final String price;
   final int maxQuantity;
 
-  String get unit => pricingType == 'per_day' ? 'لليوم' : 'للحجز';
+  String get unit => pricingType == 'per_day' ? tr('لليوم') : tr('للحجز');
 
   factory Extra.fromJson(Map<String, dynamic> json) => Extra(
     id: json['id'] as int,
@@ -202,7 +211,7 @@ class Offer {
   final Quote quote;
   final int? seats;
 
-  String get modelsLine => models.isEmpty ? '' : '${models.join(' أو ')} أو مماثل';
+  String get modelsLine => models.isEmpty ? '' : tr('{0} أو مماثل', [models.join(tr(' أو '))]);
 
   factory Offer.fromJson(Map<String, dynamic> json) => Offer(
     category: Category.fromJson(_map(json['category'])),
@@ -422,4 +431,26 @@ class PaymentPage {
   final String amount;
 
   factory PaymentPage.fromJson(Map<String, dynamic> json) => PaymentPage(url: json['url'] as String, amount: json['amount'].toString());
+}
+
+/// Whether the renter can pick up (or return) the car from the app now, and how a request
+/// already sent stands.
+class SelfServiceStatus {
+  SelfServiceStatus({required this.available, this.reason, this.pendingLabel, this.rejectedReason, this.minPhotos = 4});
+
+  final bool available;
+  final String? reason;
+  final String? pendingLabel;
+  final String? rejectedReason;
+  final int minPhotos;
+
+  bool get isPending => pendingLabel != null;
+
+  factory SelfServiceStatus.fromJson(Map<String, dynamic> json) => SelfServiceStatus(
+    available: json['available'] as bool? ?? false,
+    reason: json['reason'] as String?,
+    pendingLabel: (json['pending'] as Map?)?['status_label'] as String?,
+    rejectedReason: (json['last_rejected'] as Map?)?['rejection_reason'] as String?,
+    minPhotos: json['min_photos'] as int? ?? 4,
+  );
 }

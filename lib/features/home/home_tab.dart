@@ -9,6 +9,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import '../booking/booking_draft.dart';
+import '../../core/i18n.dart';
 
 /// Home: the car the renter has now, the next pickup, and the booking search.
 class HomeTab extends ConsumerStatefulWidget {
@@ -78,11 +79,11 @@ class _HomeTabState extends ConsumerState<HomeTab> {
 
   void _search(List<Branch> branches) {
     final branch = _branch ?? (branches.length == 1 ? branches.first : null);
-    if (branch == null) return setState(() => _error = 'اختر فرع الاستلام.');
+    if (branch == null) return setState(() => _error = tr('اختر فرع الاستلام.'));
     if (!_pickup.isAfter(Fmt.nowInRiyadh().add(const Duration(minutes: 30)))) {
-      return setState(() => _error = 'اختر وقت استلام بعد نصف ساعة من الآن على الأقل.');
+      return setState(() => _error = tr('اختر وقت استلام بعد نصف ساعة من الآن على الأقل.'));
     }
-    if (!_return.isAfter(_pickup)) return setState(() => _error = 'موعد الإعادة يجب أن يكون بعد الاستلام.');
+    if (!_return.isAfter(_pickup)) return setState(() => _error = tr('موعد الإعادة يجب أن يكون بعد الاستلام.'));
 
     setState(() => _error = null);
     context.push(
@@ -115,13 +116,13 @@ class _HomeTabState extends ConsumerState<HomeTab> {
           padding: const EdgeInsets.all(16),
           children: [
             Text(
-              'أهلاً ${profile?.firstName ?? ''}',
+              tr('أهلاً {0}', [profile?.firstName ?? '']),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             const SizedBox(height: 12),
             if (profile?.licenseExpiringSoon ?? false) ...[
               NoticeBanner(
-                'رخصة قيادتك تنتهي في ${Fmt.date(profile!.licenseExpiry)}. جدّدها قبل الاستلام، فالفرع لا يسلّم السيارة برخصة منتهية.',
+                tr('رخصة قيادتك تنتهي في {0}. جدّدها قبل الاستلام، فالفرع لا يسلّم السيارة برخصة منتهية.', [Fmt.date(profile!.licenseExpiry)]),
                 icon: Icons.badge_outlined,
               ),
               const SizedBox(height: 12),
@@ -129,7 +130,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             for (final contract in contracts.value ?? const <Contract>[]) ...[_CurrentRental(contract: contract), const SizedBox(height: 12)],
             if ((upcoming.value ?? const []).isNotEmpty) ...[_NextPickup(reservation: upcoming.value!.first), const SizedBox(height: 12)],
             SectionCard(
-              title: 'احجز سيارة',
+              title: tr('احجز سيارة'),
               child: branches.when(
                 loading: () => const Padding(
                   padding: EdgeInsets.all(24),
@@ -143,7 +144,7 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                       key: const Key('branch'),
                       initialValue: (_branch ?? (list.length == 1 ? list.first : null))?.id,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'فرع الاستلام', prefixIcon: Icon(Icons.storefront_outlined)),
+                      decoration: InputDecoration(labelText: tr('فرع الاستلام'), prefixIcon: Icon(Icons.storefront_outlined)),
                       items: [
                         for (final b in list)
                           DropdownMenuItem(
@@ -157,23 +158,23 @@ class _HomeTabState extends ConsumerState<HomeTab> {
                     Row(
                       children: [
                         Expanded(
-                          child: _WhenField(key: const Key('pickup'), label: 'الاستلام', value: Fmt.dayTime(_pickup), onTap: _pickPickup),
+                          child: _WhenField(key: const Key('pickup'), label: tr('الاستلام'), value: Fmt.dayTime(_pickup), onTap: _pickPickup),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _WhenField(key: const Key('return'), label: 'الإعادة', value: Fmt.dayTime(_return), onTap: _pickReturn),
+                          child: _WhenField(key: const Key('return'), label: tr('الإعادة'), value: Fmt.dayTime(_return), onTap: _pickReturn),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(days > 0 ? 'مدة الإيجار: ${Fmt.days(days)}' : '', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    Text(days > 0 ? tr('مدة الإيجار: {0}', [Fmt.days(days)]) : '', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
                     if (_error != null) ...[const SizedBox(height: 8), Text(_error!, style: const TextStyle(color: AppColors.danger))],
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       key: const Key('search'),
                       onPressed: list.isEmpty ? null : () => _search(list),
                       icon: const Icon(Icons.search),
-                      label: const Text('اعرض السيارات المتاحة'),
+                      label: Text(tr('اعرض السيارات المتاحة')),
                     ),
                   ],
                 ),
@@ -183,15 +184,15 @@ class _HomeTabState extends ConsumerState<HomeTab> {
             Row(
               children: [
                 Expanded(
-                  child: _Shortcut(icon: Icons.receipt_long_outlined, label: 'فواتيري', onTap: () => context.push('/invoices')),
+                  child: _Shortcut(icon: Icons.receipt_long_outlined, label: tr('فواتيري'), onTap: () => context.push('/invoices')),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _Shortcut(icon: Icons.location_on_outlined, label: 'الفروع', onTap: () => context.push('/branches')),
+                  child: _Shortcut(icon: Icons.location_on_outlined, label: tr('الفروع'), onTap: () => context.push('/branches')),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _Shortcut(icon: Icons.support_agent, label: 'عرض سعر خاص', onTap: () => context.push('/callback')),
+                  child: _Shortcut(icon: Icons.support_agent, label: tr('عرض سعر خاص'), onTap: () => context.push('/callback')),
                 ),
               ],
             ),
@@ -271,20 +272,20 @@ class _CurrentRental extends StatelessWidget {
               children: [
                 const Icon(Icons.directions_car, color: AppColors.primary),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'سيارتك الحالية',
+                    tr('سيارتك الحالية'),
                     style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
                   ),
                 ),
-                StatusChip(contract.isOverdue ? 'متأخر' : contract.statusLabel, color: StatusChip.forContract(contract.status, contract.isOverdue)),
+                StatusChip(contract.isOverdue ? tr('متأخر') : contract.statusLabel, color: StatusChip.forContract(contract.status, contract.isOverdue)),
               ],
             ),
             const SizedBox(height: 10),
             Text([contract.car, contract.plate].whereType<String>().join(' · '), style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Text(
-              'موعد الإعادة: ${Fmt.dateTime(contract.expectedReturnAt)}${contract.returnBranch != null ? ' — ${contract.returnBranch!.name}' : ''}',
+              tr('موعد الإعادة: {0}{1}', [Fmt.dateTime(contract.expectedReturnAt), contract.returnBranch != null ? ' — ${contract.returnBranch!.name}' : '']),
               style: TextStyle(color: contract.isOverdue ? AppColors.danger : AppColors.muted),
             ),
           ],
@@ -307,9 +308,9 @@ class _NextPickup extends StatelessWidget {
         backgroundColor: AppColors.primarySoft,
         child: Icon(Icons.event_available, color: AppColors.primary),
       ),
-      title: Text('حجزك القادم: ${reservation.category?.name ?? reservation.number}', maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(tr('حجزك القادم: {0}', [reservation.category?.name ?? reservation.number]), maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text('${Fmt.dateTime(reservation.pickupAt)} — ${reservation.branch?.name ?? ''}'),
-      trailing: const Icon(Icons.chevron_left),
+      trailing: const Icon(Icons.chevron_right),
     ),
   );
 }

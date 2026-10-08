@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/api_exception.dart';
 import '../core/theme.dart';
+import '../core/i18n.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip(this.label, {super.key, this.color = AppColors.muted});
@@ -137,7 +138,7 @@ class ErrorView extends StatelessWidget {
           const Icon(Icons.error_outline, size: 40, color: AppColors.danger),
           const SizedBox(height: 12),
           Text(ApiException.from(error).message, textAlign: TextAlign.center),
-          if (onRetry != null) ...[const SizedBox(height: 12), TextButton(onPressed: onRetry, child: const Text('إعادة المحاولة'))],
+          if (onRetry != null) ...[const SizedBox(height: 12), TextButton(onPressed: onRetry, child: Text(tr('إعادة المحاولة')))],
         ],
       ),
     ),
@@ -287,4 +288,36 @@ String? fieldError(Object? error, String field) {
   if (error is! ApiException) return null;
   final messages = error.fieldErrors[field];
   return messages == null || messages.isEmpty ? null : messages.first;
+}
+
+/// A category's car photo, or the car icon while it loads, when there is none or it fails.
+class CarImage extends StatelessWidget {
+  const CarImage(this.url, {super.key, this.height = 150});
+
+  final String? url;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final placeholder = Container(
+      height: height,
+      width: double.infinity,
+      decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
+      child: Icon(Icons.directions_car_filled, color: AppColors.primary, size: height * .35),
+    );
+
+    if (url == null || url!.isEmpty) return placeholder;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.network(
+        url!,
+        height: height,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) => progress == null ? child : placeholder,
+        errorBuilder: (context, error, stack) => placeholder,
+      ),
+    );
+  }
 }

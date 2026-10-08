@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api_exception.dart';
+import 'i18n.dart';
 
 /// Downloads a PDF and shows it inside the app, with print and share buttons, so it works
 /// on phones without a PDF viewer installed.
@@ -37,7 +38,7 @@ Future<void> openPdf(
 /// Payment pages open in the in-app browser so the renter comes straight back afterwards.
 Future<void> openPaymentPage(String url) async {
   final ok = await launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
-  if (!ok) throw ApiException('تعذّر فتح صفحة الدفع.');
+  if (!ok) throw ApiException(tr('تعذّر فتح صفحة الدفع.'));
 }
 
 Future<void> callPhone(String phone) =>

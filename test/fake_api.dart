@@ -11,11 +11,15 @@ class FakeApi implements HttpClientAdapter {
   final Map<String, (int, Object?) Function(Map<String, dynamic> body, Map<String, dynamic> query)> routes;
   final calls = <(String, Map<String, dynamic>)>[];
 
+  /// The Accept-Language of the last request.
+  String? language;
+
   @override
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
     final key = '${options.method} ${options.path}';
     final body = options.data is Map ? Map<String, dynamic>.from(options.data as Map) : <String, dynamic>{};
     calls.add((key, body));
+    language = options.headers['Accept-Language'] as String?;
 
     final handler = routes[key];
     final (status, json) = handler == null ? (404, {'message': 'not faked: $key'}) : handler(body, options.queryParameters);
@@ -92,7 +96,7 @@ Map<String, Object?> reservation({String status = 'confirmed', String label = '�
   'vat': '54.00',
   'total': '414.00',
   'deposit_amount': '500.00',
-  'category': {'id': 1, 'name': 'اقتصادية'},
+  'category': {'id': 1, 'name': 'اقتصادية', 'image_url': 'https://rent.example.sa/storage/vehicle-categories/eco.png'},
   'branch': branch,
   'return_branch': branch,
   'extras': [],

@@ -1,0 +1,134 @@
+name: Build company app
+
+# One Android build per rental company, started from the SOftiX platform panel
+# («الشركات ← تطبيق العملاء ← بناء نسخة») or by hand from the Actions tab.
+# The APK (to try on a phone) and the AAB (for Google Play) are attached to the run.
+#
+# Release signing: add these repository secrets once (Settings ← Secrets ← Actions);
+# without them the build is signed with debug keys, fine to try but not for the store.
+#   ANDROID_KEYSTORE_BASE64   base64 of upload.jks
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        description: Build number in the platform (for its records)
+        required: false
+        default: manual
+      company_id:
+        description: COMPANY_ID in the platform
+        required: true
+      app_id:
+        description: Application id (e.g. com.softix.rentalCustomer)
+        required: true
+      app_name:
+        description: Name under the icon on the phone
+        required: true
+      company_name:
+        description: Company name shown in the app
+        required: true
+      api_base_url:
+        description: API address, e.g. https://rental.softiix.com/api/v1
+        required: true
+      version:
+        description: Version name+code, e.g. 1.0.3+7
+        required: true
+        default: 1.0.0+1
+      logo_url:
+        description: Square logo (PNG/JPG), optional
+        required: false
+      firebase:
+        description: 'Firebase JSON {"api_key","app_id","sender_id","project_id"}, optional'
+        required: false
+
+run-name: "${{ inputs.app_name }} ${{ inputs.version }} (${{ inputs.app_id }})"
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Check the inputs
+        env:
+          APP_ID: ${{ inputs.app_id }}
+          API: ${{ inputs.api_base_url }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$APP_ID" =~ ^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$ ]] || { echo "::error::Invalid application id: $APP_ID"; exit 1; }
+          [[ "$API" =~ ^https:// ]] || { echo "::error::The API address must start with https://"; exit 1; }
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]] || { echo "::error::Version must look like 1.0.3+7"; exit 1; }
+
+      - name: Company logo
+        if: ${{ inputs.logo_url != '' }}
+        env:
+          LOGO_URL: ${{ inputs.logo_url }}
+        run: |
+          command -v convert >/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q imagemagick; }
+          curl -fsSL "$LOGO_URL" -o /tmp/logo
+          # In-app logo, and the launcher icon at every density (white square background).
+          convert /tmp/logo -resize 512x512 -background none -gravity center -extent 512x512 assets/images/softix-logo.png
+          for pair in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            dir="android/app/src/main/res/mipmap-${pair%%:*}"; size="${pair##*:}"
+            convert /tmp/logo -resize "$((size * 80 / 100))x$((size * 80 / 100))" -background white -gravity center -extent "${size}x${size}" "$dir/ic_launcher.png"
+          done
+
+      - name: Release signing
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ]; then
+            echo "::warning::No signing secrets: signed with debug keys (fine to try, not for Google Play)."
+            exit 0
+          fi
+          echo "$KEYSTORE" | base64 -d > android/upload.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=%s\n' "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" "$PWD/android/upload.jks" > android/key.properties
+
+      - name: Build
+        env:
+          FIREBASE: ${{ inputs.firebase }}
+          VERSION: ${{ inputs.version }}
+          APP_ID: ${{ inputs.app_id }}
+          APP_NAME: ${{ inputs.app_name }}
+          COMPANY_NAME: ${{ inputs.company_name }}
+          COMPANY_ID: ${{ inputs.company_id }}
+          API: ${{ inputs.api_base_url }}
+        run: |
+          flutter pub get
+          field() { [ -n "$FIREBASE" ] && echo "$FIREBASE" | jq -r ".$1 // empty" || true; }
+          args=(
+            --build-name="${VERSION%%+*}" --build-number="${VERSION##*+}"
+            --android-project-arg="appId=$APP_ID" --android-project-arg="appName=$APP_NAME"
+            --dart-define="API_BASE_URL=$API" --dart-define="COMPANY_ID=$COMPANY_ID" --dart-define="COMPANY_NAME=$COMPANY_NAME"
+          )
+          [ -n "$(field api_key)" ] && args+=(--dart-define="FIREBASE_API_KEY=$(field api_key)" --dart-define="FIREBASE_APP_ID=$(field app_id)" --dart-define="FIREBASE_SENDER_ID=$(field sender_id)")
+          [ -n "$(field project_id)" ] && args+=(--dart-define="FIREBASE_PROJECT_ID=$(field project_id)")
+          flutter build apk --release "${args[@]}"
+          flutter build appbundle --release "${args[@]}"
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/$APP_ID-$VERSION.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "dist/$APP_ID-$VERSION.aab"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.app_id }}-${{ inputs.version }}
+          path: dist/
+          retention-days: 30

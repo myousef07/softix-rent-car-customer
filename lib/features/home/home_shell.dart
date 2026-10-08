@@ -4,6 +4,7 @@ import '../account/account_tab.dart';
 import '../contracts/contracts_tab.dart';
 import '../reservations/reservations_tab.dart';
 import 'home_tab.dart';
+import '../../core/i18n.dart';
 
 /// The four sections of the app; each keeps its state while the renter switches.
 class HomeShell extends StatefulWidget {
@@ -38,11 +39,11 @@ class _HomeShellState extends State<HomeShell> {
     bottomNavigationBar: NavigationBar(
       selectedIndex: _tab,
       onDestinationSelected: (tab) => setState(() => _tab = tab),
-      destinations: const [
-        NavigationDestination(icon: Icon(Icons.directions_car_outlined), selectedIcon: Icon(Icons.directions_car), label: 'احجز'),
-        NavigationDestination(icon: Icon(Icons.event_note_outlined), selectedIcon: Icon(Icons.event_note), label: 'حجوزاتي'),
-        NavigationDestination(icon: Icon(Icons.description_outlined), selectedIcon: Icon(Icons.description), label: 'عقودي'),
-        NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'حسابي'),
+      destinations: [
+        NavigationDestination(icon: Icon(Icons.directions_car_outlined), selectedIcon: Icon(Icons.directions_car), label: tr('احجز')),
+        NavigationDestination(icon: Icon(Icons.event_note_outlined), selectedIcon: Icon(Icons.event_note), label: tr('حجوزاتي')),
+        NavigationDestination(icon: Icon(Icons.description_outlined), selectedIcon: Icon(Icons.description), label: tr('عقودي')),
+        NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: tr('حسابي')),
       ],
     ),
   );

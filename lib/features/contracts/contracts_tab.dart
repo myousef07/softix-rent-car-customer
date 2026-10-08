@@ -8,6 +8,7 @@ import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/paged_list.dart';
+import '../../core/i18n.dart';
 
 class ContractsTab extends ConsumerStatefulWidget {
   const ContractsTab({super.key});
@@ -25,15 +26,15 @@ class _ContractsTabState extends ConsumerState<ContractsTab> {
     ref.listen(openContractsProvider, (_, _) => setState(() => _reload++));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('عقودي')),
+      appBar: AppBar(title: Text(tr('عقودي'))),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'open', label: Text('السارية')),
-                ButtonSegment(value: 'closed', label: Text('المنتهية')),
+              segments: [
+                ButtonSegment(value: 'open', label: Text(tr('السارية'))),
+                ButtonSegment(value: 'closed', label: Text(tr('المنتهية'))),
               ],
               selected: {_scope},
               onSelectionChanged: (s) => setState(() => _scope = s.first),
@@ -43,7 +44,7 @@ class _ContractsTabState extends ConsumerState<ContractsTab> {
             child: PagedList<Contract>(
               filters: (_scope, _reload),
               fetch: (cursor) => ref.read(repositoryProvider).contracts(scope: _scope, cursor: cursor),
-              empty: _scope == 'open' ? 'لا توجد عقود سارية.' : 'لا توجد عقود سابقة.',
+              empty: _scope == 'open' ? tr('لا توجد عقود سارية.') : tr('لا توجد عقود سابقة.'),
               itemBuilder: (context, c) => _ContractTile(contract: c),
             ),
           ),
@@ -78,7 +79,7 @@ class _ContractTile extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink),
                   ),
                 ),
-                StatusChip(contract.isOverdue ? 'متأخر' : contract.statusLabel, color: StatusChip.forContract(contract.status, contract.isOverdue)),
+                StatusChip(contract.isOverdue ? tr('متأخر') : contract.statusLabel, color: StatusChip.forContract(contract.status, contract.isOverdue)),
               ],
             ),
             const SizedBox(height: 6),

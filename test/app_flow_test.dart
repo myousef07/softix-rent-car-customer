@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:softix_customer/app.dart';
 import 'package:softix_customer/core/api_client.dart';
+import 'package:softix_customer/core/i18n.dart';
 import 'package:softix_customer/core/providers.dart';
 import 'package:softix_customer/core/session.dart';
 
@@ -18,6 +19,8 @@ void main() {
 
   late FakeApi api;
   late bool newNumber;
+
+  tearDown(() => AppLanguage.current.value = 'ar');
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
@@ -56,6 +59,12 @@ void main() {
       ),
       'GET /contracts': (_, query) => (200, page(query['scope'] == 'closed' ? [] : [contract])),
       'GET /contracts/19': (_, _) => (200, {'data': contract}),
+      'GET /contracts/19/self-return': (_, _) => (
+        200,
+        {
+          'data': {'available': true, 'reason': null, 'pending': null, 'last_rejected': null, 'min_photos': 4},
+        },
+      ),
       'GET /reservations': (_, query) => (200, page(query['scope'] == 'upcoming' && !cancelled ? [reservation()] : [])),
       'GET /search': (_, _) => (
         200,
@@ -145,6 +154,56 @@ void main() {
     expect(find.text('RC-RUH-000019'), findsOneWidget);
     expect(find.textContaining('214.00'), findsWidgets);
     expect(find.byKey(const Key('pay')), findsOneWidget);
+  });
+
+  testWidgets('the renter switches to English and back; the app asks the server in that language', (tester) async {
+    await start(tester);
+    await tester.tap(find.byKey(const Key('language')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mobile number'), findsOneWidget);
+    expect(find.text('Book your car and follow your contracts and invoices from your phone'), findsOneWidget);
+    expect(Directionality.of(tester.element(find.byKey(const Key('mobile')))), TextDirection.ltr);
+    expect(find.text('العربية'), findsOneWidget);
+
+    await signIn(tester);
+    expect(api.language, 'en');
+    expect(find.text('Hello فهد'), findsOneWidget);
+    expect(find.text('Your current car'), findsOneWidget);
+
+    await tester.tap(find.text('My account'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('language')), 200, scrollable: _page);
+    await tester.tap(find.byKey(const Key('language')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('حسابي'), findsWidgets);
+    expect(Directionality.of(tester.element(find.text('حسابي').first)), TextDirection.rtl);
+    expect(await const FlutterSecureStorage().read(key: 'app_language'), 'ar');
+  });
+
+  testWidgets('a renter on a rental can return the car from the app, which asks for the photos first', (tester) async {
+    await start(tester);
+    await signIn(tester);
+
+    await tester.tap(find.text('سيارتك الحالية'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('سلّم السيارة الآن'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('سلّم السيارة الآن'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('تسليم السيارة'), findsOneWidget);
+    expect(find.textContaining('التالية: الأمام'), findsOneWidget);
+    expect(find.text('التوقيع'), findsNothing, reason: 'the signature is for pickup only');
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'قراءة العداد'), '25600');
+    await tester.ensureVisible(find.text('إرسال طلب التسليم'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('إرسال طلب التسليم'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('صوّر السيارة من الجهات الأربع'), findsOneWidget);
+    expect(api.called('POST /contracts/19/self-return'), isFalse);
   });
 
   testWidgets('a renter books a car with an extra and a promo code, then cancels it', (tester) async {

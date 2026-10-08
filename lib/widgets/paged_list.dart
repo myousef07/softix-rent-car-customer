@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../models/paged_result.dart';
 import 'common.dart';
+import '../core/i18n.dart';
 
 /// Pull-to-refresh list over a cursor-paginated endpoint; loads the next page near the end.
 class PagedList<T> extends StatefulWidget {
-  const PagedList({super.key, required this.fetch, required this.itemBuilder, this.filters, this.empty = 'لا توجد نتائج.', this.header});
+  const PagedList({super.key, required this.fetch, required this.itemBuilder, this.filters, this.empty, this.header});
 
   final Future<PagedResult<T>> Function(String? cursor) fetch;
 
   /// The list reloads from the first page whenever this value changes (search text, tab, branch).
   final Object? filters;
   final Widget Function(BuildContext context, T item) itemBuilder;
-  final String empty;
+  /// Shown when there is nothing to list; «No results» by default.
+  final String? empty;
   final Widget? header;
 
   @override
@@ -71,7 +73,7 @@ class PagedListState<T> extends State<PagedList<T>> {
     return RefreshIndicator(
       onRefresh: refresh,
       child: _items.isEmpty
-          ? ListView(children: [?widget.header, EmptyState(widget.empty)])
+          ? ListView(children: [?widget.header, EmptyState(widget.empty ?? tr('لا توجد نتائج.'))])
           : ListView.separated(
               padding: const EdgeInsets.all(12),
               itemCount: headerCount + _items.length + (_hasMore ? 1 : 0),

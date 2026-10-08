@@ -8,6 +8,8 @@ import '../../core/providers.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/common.dart';
+import '../self_service/self_service_screen.dart';
+import '../../core/i18n.dart';
 
 class ReservationScreen extends ConsumerStatefulWidget {
   const ReservationScreen({super.key, required this.id});
@@ -37,7 +39,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
       await ref.read(repositoryProvider).cancelReservation(r.id, reason.isEmpty ? null : reason);
       if (!mounted) return;
       ref.invalidate(upcomingReservationsProvider);
-      showSuccess(context, 'تم إلغاء الحجز.');
+      showSuccess(context, tr('تم إلغاء الحجز.'));
       _reload();
     } catch (error) {
       if (mounted) showError(context, error);
@@ -46,7 +48,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('تفاصيل الحجز')),
+    appBar: AppBar(title: Text(tr('تفاصيل الحجز'))),
     body: FutureBuilder<Reservation>(
       future: _reservation,
       builder: (context, snapshot) {
@@ -59,71 +61,72 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (r.status == 'confirmed') SelfServiceCard(key: ValueKey('pickup-${r.id}'), pickup: true, id: r.id),
               SectionCard(
-                title: r.category?.name ?? 'الحجز',
+                title: r.category?.name ?? tr('الحجز'),
                 trailing: StatusChip(r.statusLabel, color: StatusChip.forReservation(r.status)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InfoItem('رقم الحجز', r.number, ltr: true),
+                    InfoItem(tr('رقم الحجز'), r.number, ltr: true),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: InfoItem('الاستلام', Fmt.dateTime(r.pickupAt))),
-                        Expanded(child: InfoItem('الإعادة', Fmt.dateTime(r.returnAt))),
+                        Expanded(child: InfoItem(tr('الاستلام'), Fmt.dateTime(r.pickupAt))),
+                        Expanded(child: InfoItem(tr('الإعادة'), Fmt.dateTime(r.returnAt))),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: InfoItem('فرع الاستلام', r.branch?.name ?? '—')),
-                        Expanded(child: InfoItem('فرع الإعادة', (r.returnBranch ?? r.branch)?.name ?? '—')),
+                        Expanded(child: InfoItem(tr('فرع الاستلام'), r.branch?.name ?? '—')),
+                        Expanded(child: InfoItem(tr('فرع الإعادة'), (r.returnBranch ?? r.branch)?.name ?? '—')),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    InfoItem('المدة', Fmt.days(r.days)),
+                    InfoItem(tr('المدة'), Fmt.days(r.days)),
                     if (r.extras.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      InfoItem('الإضافات', r.extras.map((e) => e.quantity > 1 ? '${e.name} × ${e.quantity}' : e.name).join('، ')),
+                      InfoItem(tr('الإضافات'), r.extras.map((e) => e.quantity > 1 ? '${e.name} × ${e.quantity}' : e.name).join(tr('، '))),
                     ],
                   ],
                 ),
               ),
               const SizedBox(height: 12),
               SectionCard(
-                title: 'المبالغ',
+                title: tr('المبالغ'),
                 child: Column(
                   children: [
-                    AmountRow('قبل الضريبة', Fmt.money(r.subtotal)),
-                    if ((double.tryParse(r.discount) ?? 0) > 0) AmountRow('الخصم', '- ${Fmt.money(r.discount)}', color: AppColors.success),
-                    AmountRow('الضريبة', Fmt.money(r.vat)),
+                    AmountRow(tr('قبل الضريبة'), Fmt.money(r.subtotal)),
+                    if ((double.tryParse(r.discount) ?? 0) > 0) AmountRow(tr('الخصم'), '- ${Fmt.money(r.discount)}', color: AppColors.success),
+                    AmountRow(tr('الضريبة'), Fmt.money(r.vat)),
                     const Divider(height: 16),
-                    AmountRow('الإجمالي', Fmt.money(r.total), bold: true),
-                    AmountRow('التأمين المسترد (عند الاستلام)', Fmt.money(r.deposit)),
+                    AmountRow(tr('الإجمالي'), Fmt.money(r.total), bold: true),
+                    AmountRow(tr('التأمين المسترد (عند الاستلام)'), Fmt.money(r.deposit)),
                   ],
                 ),
               ),
               if (r.isActive) ...[
                 const SizedBox(height: 12),
-                const NoticeBanner('أحضر الهوية ورخصة القيادة الأصلية عند الاستلام.', color: AppColors.primary, icon: Icons.badge_outlined),
+                NoticeBanner(tr('أحضر الهوية ورخصة القيادة الأصلية عند الاستلام.'), color: AppColors.primary, icon: Icons.badge_outlined),
               ],
               const SizedBox(height: 16),
               if (r.contractId != null)
                 FilledButton.icon(
                   onPressed: () => context.push('/contracts/${r.contractId}'),
                   icon: const Icon(Icons.description_outlined),
-                  label: const Text('عرض العقد'),
+                  label: Text(tr('عرض العقد')),
                 ),
               if (r.branch?.phone != null) ...[
                 const SizedBox(height: 8),
-                OutlinedButton.icon(onPressed: () => callPhone(r.branch!.phone!), icon: const Icon(Icons.call_outlined), label: const Text('اتصل بالفرع')),
+                OutlinedButton.icon(onPressed: () => callPhone(r.branch!.phone!), icon: const Icon(Icons.call_outlined), label: Text(tr('اتصل بالفرع'))),
               ],
               if (r.branch?.latitude != null && r.branch?.longitude != null) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: () => openMap(r.branch!.latitude!, r.branch!.longitude!),
                   icon: const Icon(Icons.map_outlined),
-                  label: const Text('موقع الفرع'),
+                  label: Text(tr('موقع الفرع')),
                 ),
               ],
               if (r.isActive) ...[
@@ -132,7 +135,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                   key: const Key('cancel-reservation'),
                   style: TextButton.styleFrom(foregroundColor: AppColors.danger),
                   onPressed: () => _cancel(r),
-                  child: const Text('إلغاء الحجز'),
+                  child: Text(tr('إلغاء الحجز')),
                 ),
               ],
             ],
@@ -163,25 +166,25 @@ class _CancelDialogState extends State<_CancelDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('إلغاء الحجز؟'),
+    title: Text(tr('إلغاء الحجز؟')),
     content: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('سيُلغى الحجز ${widget.number}.'),
+        Text(tr('سيُلغى الحجز {0}.', [widget.number])),
         const SizedBox(height: 12),
         TextField(
           controller: _reason,
           maxLength: 255,
-          decoration: const InputDecoration(labelText: 'السبب (اختياري)'),
+          decoration: InputDecoration(labelText: tr('السبب (اختياري)')),
         ),
       ],
     ),
     actions: [
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('تراجع')),
+      TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('تراجع'))),
       FilledButton(
         style: FilledButton.styleFrom(backgroundColor: AppColors.danger, minimumSize: const Size(0, 44)),
         onPressed: () => Navigator.pop(context, _reason.text.trim()),
-        child: const Text('إلغاء الحجز'),
+        child: Text(tr('إلغاء الحجز')),
       ),
     ],
   );

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import 'api_exception.dart';
 import 'config.dart';
+import 'i18n.dart';
 
 /// Thin wrapper over Dio for the customer endpoints (/api/v1/customer): bearer token, JSON,
 /// and every failure turned into [ApiException].
@@ -17,6 +18,15 @@ class ApiClient {
         ),
       ) {
     if (adapter != null) _dio.httpClientAdapter = adapter;
+    // Messages and status labels come back in the app's language.
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          options.headers['Accept-Language'] = AppLanguage.current.value;
+          handler.next(options);
+        },
+      ),
+    );
   }
 
   final Dio _dio;
